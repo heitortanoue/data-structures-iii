@@ -3,9 +3,28 @@
 #include <string.h>
 #include "registro.h"
 #include "orgarquivos.h"
+#include "csv.h"
 #define LIXO '$'
 
-//Chamada da leitura dos campos a cada registro
+// Cria um novo registro e aloca memoria para suas strings
+int criaRegistro (Registro *r) {
+    r->siglaPais = (char*) malloc(sizeof(char) * (TAM_SIGLA + 1));
+    r->nomePoPs = (char*) malloc(sizeof(char) * TAM_STRING);
+    r->nomePais = (char*) malloc(sizeof(char) * TAM_STRING);
+
+    return SUCESSO;
+}
+
+// Libera a memória alocada para um registro
+int destroiRegistro (Registro *r) {
+    free(r->siglaPais);
+    free(r->nomePoPs);
+    free(r->nomePais);
+
+    return SUCESSO;
+}
+
+//Chamada da leitura dos campos a cada registro no teclado
 int lerDadosRegistroTeclado(Registro *t) {
     char str[128];
     t->removido = 0;
@@ -32,6 +51,7 @@ int copiaStringRegistro (char* destino, char* origem, int tam) {
     return SUCESSO;
 }
 
+// Indica se o registro foi removido logicamente
 int registroRemovido (Registro *r) {
     return r->removido == 0;
 }
@@ -53,17 +73,6 @@ void readline(char* string){
     } while(c != '\n' && c != '\r');
 
     string[i]  = '\0';
-}
-
-int atualizarCabecalhoPadrao (Cabecalho *c ) {
-	c->status = 0;
-    c->topo = -1;
-    c->proxRRN = 0;
-    c->nroRegRem = 0;
-    c->nroPagDisco = 0;
-    c->qttCompacta = 0;
-
-    return SUCESSO;
 }
 
 //Leitura de cada campo no respectivo registro
@@ -116,71 +125,22 @@ void imprimeRegistro (Registro *r ) {
     printf("\n");
 }
 
-int lerCsvRegistro (Registro *r, char *linha) {
-    char *temp = malloc(sizeof(char) * 64);
-
-    meuStrtok(temp, linha, ',');
-    r->idConecta = validaInt(temp);
-
-    meuStrtok(temp, linha, ',');
-    strcpy(r->nomePoPs, validaString(temp));
-
-    meuStrtok(temp, linha, ',');
-    strcpy(r->nomePais, validaString(temp));
-
-    meuStrtok(temp, linha, ',');
-    strcpy(r->siglaPais, validaString(temp));
-
-    meuStrtok(temp, linha, ',');
-    r->idPoPsConectado = validaInt(temp);
-
-    meuStrtok(temp, linha, ',');
-    r->unidadeMedida = validaChar(temp);
-
-    meuStrtok(temp, linha, ',');
-    r->velocidade = validaInt(temp);
-
-    free(temp);
-    return SUCESSO;
-}
-
-void meuStrtok (char* pedaco, char *str, char delim) {
-    int i = 0;
-    while (str[i] != delim && str[i] != '\0') {
-        pedaco[i] = str[i];
-        i++;
+// Função auxiliar para impressao do registro inteiro
+void imprimeRegistroRaw (FILE* arq) {
+    for (int i = 0; i < TAM_REGISTRO; i++) {
+        char c = fgetc(arq);
+        printf("%c", c);
     }
-    pedaco[i] = '\0';
-
-    if (str[i] == delim) {
-        i++;
-    }
-
-    int j = 0;
-    while (str[i] != '\0') {
-        str[j] = str[i];
-        i++;
-        j++;
-    }
-    str[j] = '\0';
+    printf("\n\n");
 }
 
-char* validaString (char* str) {
-    return str && str[0] != '\0' ? str : "\0";
-}
-int validaInt (char* i) {
-    return i ? atoi(i) : -1;
-}
-char validaChar (char* c) {
-    return c && c[0] != '\0' ? c[0] : '\0';
-}
+// Conta quantos registros há em um determinado arquivo
+int contarRegistros (FILE *arq) {
+    fseek(arq, 0, SEEK_END);
+    long tamFinal = ftell(arq);
+    fseek(arq, TAM_PG_DISCO - 1, SEEK_SET);
+    long tamInicial = ftell(arq);
+    fseek(arq, 0, SEEK_SET);
 
-int stringValida (char* str) {
-    return str && str[0] != '\0';
-}
-int intValido (int i) {
-    return i != -1;
-}
-int charValido (char c) {
-    return c != '\0';
+    return (tamFinal - tamInicial) / TAM_REGISTRO;
 }

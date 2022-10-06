@@ -2,5 +2,6 @@
 #define __FUNCIONALIDADES_H__
 
 int funcionalidade1 (void);
+int funcionalidade2 (void);
 
 #endif

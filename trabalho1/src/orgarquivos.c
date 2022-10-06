@@ -3,6 +3,7 @@
 #include <string.h>
 #include "orgarquivos.h"
 #include "registro.h"
+#include "csv.h"
 
 // Abre o arquivo de saída, de acordo com o nome passado. Tanto para leitura quanto para escrita.
 FILE* abreArquivo(char *nome_arquivo, char *type) {
@@ -16,63 +17,181 @@ FILE* abreArquivo(char *nome_arquivo, char *type) {
 
 //Faz a inserção dos dados lidos a cada registro
 int inserirRegistroArquivo(FILE *arq, Registro* r) {
-	inserirCampoFixo(&r->removido, sizeof(char), 1, arq);
-	inserirCampoFixo(&r->encadeamento, sizeof(int), 1, arq);
+	int tam_inicial = ftell(arq);
 
-	inserirCampoFixo(&r->idConecta, sizeof(int), 1, arq);
-	inserirCampoFixo(r->siglaPais, sizeof(char), TAM_SIGLA, arq);
-	inserirCampoFixo(&r->idPoPsConectado, sizeof(int), 1, arq);
-	inserirCampoFixo(&r->unidadeMedida, sizeof(char), 1, arq);
-	inserirCampoFixo(&r->velocidade, sizeof(int), 1, arq);
+	inserirCampoFixo(&r->removido, sizeof(char), 1, sizeof(char), arq);
+	inserirCampoFixo(&r->encadeamento, sizeof(int), 1, sizeof(int), arq);
+
+	inserirCampoFixo(&r->idConecta, sizeof(int), 1, sizeof(int), arq);
+	inserirStringCampoFixo(r->siglaPais, TAM_SIGLA, arq);
+
+	inserirCampoFixo(&r->idPoPsConectado, sizeof(int), 1, sizeof(int), arq);
+	inserirCharCampoFixo(r->unidadeMedida, 1, arq);
+	inserirCampoFixo(&r->velocidade, sizeof(int), 1, sizeof(int), arq);
 
 	inserirCampoVariavel(r->nomePoPs, arq);
 	inserirCampoVariavel(r->nomePais, arq);
+
+	// preencher o resto do registro com lixo
+	int tam_final = ftell(arq);
+	int tam = tam_final - tam_inicial;
+	int tam_lixo = TAM_REGISTRO - tam;
+	escreverLixo(arq, tam_lixo);
 
 	return SUCESSO;
 }
 
 // Lê um determinado registro do arquivo correspondente
 int lerRegistroArquivo(FILE *arq, Registro* r){
-	fread(&r->removido, sizeof(char), 1, arq);
-	fread(&r->encadeamento, sizeof(int), 1, arq);
+	lerCampoFixo(arq, &r->removido, sizeof(char), 1);
+	lerCampoFixo(arq, &r->encadeamento, sizeof(int), 1);
 
-	fread(&r->idConecta, sizeof(int), 1, arq);
-	fread(&r->siglaPais, sizeof(char), TAM_SIGLA, arq);
-	fread(&r->idPoPsConectado, sizeof(int), 1, arq);
-	fread(&r->unidadeMedida, sizeof(char), 1, arq);
-	fread(&r->velocidade, sizeof(int), 1, arq);
-	
-	fread(&r->nomePoPs, sizeof(char), strlen(r->nomePoPs), arq);
-	fread(&r->nomePais, sizeof(char), strlen(r->nomePais), arq);
+	lerCampoFixo(arq, &r->idConecta, sizeof(int), 1);
+	lerStringCampoFixo(arq, r->siglaPais, TAM_SIGLA);
+
+	lerCampoFixo(arq, &r->idPoPsConectado, sizeof(int), 1);
+	lerCampoFixo(arq, &r->unidadeMedida, sizeof(char), 1);
+	lerCampoFixo(arq, &r->velocidade, sizeof(int), 1);
+
+	lerStringCampoVariavel(arq, r->nomePoPs);
+	lerStringCampoVariavel(arq, r->nomePais);
+
+	// pular o restante de lixo
+	int tam_campo_variavel = strlen(r->nomePoPs) + strlen(r->nomePais) + 2;
+	fseek(arq, TAM_REGISTRO - TAM_REGISTRO_FIXO - tam_campo_variavel, SEEK_CUR);
 
 	return SUCESSO;
 }
 
+// Leitura de um campo de tamanho fixo de tamanho 'tam_campo * qtd_campo' bytes
+int lerCampoFixo (FILE *arq, void *campo, int tam_campo, int qtd_campo) {
+	fread(campo, tam_campo, qtd_campo, arq);
+	return SUCESSO;
+}
+
+// Leitura de uma string em um campo de tamanho fixo com 'tam_campo' bytes
+int lerStringCampoFixo (FILE *arq, char *campo, int tam_campo) {
+	char *aux = (char*) malloc(sizeof(char) * (tam_campo + 1));
+	lerCampoFixo(arq, aux, sizeof(char), tam_campo);
+
+	int i = 0;
+	// Faz a leitura do campo até encontrar lixo ou até quando o campo terminar
+	while (aux[i] != LIXO && i < tam_campo) {
+		campo[i] = aux[i];
+		i++;
+	}
+	campo[i] = '\0';
+
+	free(aux);
+	return SUCESSO;
+}
+
+// Leitura de uma string em um campo de tamanho variável
+int lerStringCampoVariavel (FILE *arq, char *campo) {
+	char c;
+	int i = 0;
+	// Faz a leitura do campo até encontrar o delimitador
+	while ((c = fgetc(arq)) != DELIMITADOR && c != EOF) {
+		campo[i] = c;
+		i++;
+	}
+	campo[i] = '\0';
+	
+	return SUCESSO;
+}
+
 // Insere um campo de tamanho fixo no arquivo
-int inserirCampoFixo (void* r, size_t t, size_t n, FILE* arq) {
-	fwrite(r, t, n, arq);
+int inserirCampoFixo (void* r, size_t size_dado, size_t num_dado, size_t tam_campo, FILE* arq) {
+	// insere os dados
+	fwrite(r, size_dado, num_dado, arq);
+
+	// insere o restante com lixo
+	int tam_lixo = tam_campo - (size_dado * num_dado);
+	if (tam_lixo <= 0) return SUCESSO;
+
+	escreverLixo(arq, tam_lixo);
+
+	return SUCESSO;
+}
+
+// Insere uma string em um campo de tamanho fixo no arquivo
+int inserirStringCampoFixo (char* r, size_t tam_campo, FILE* arq) {
+	// insere os dados
+	if (!stringValida(r)) {
+		escreverLixo(arq, tam_campo);
+		return SUCESSO;
+	}
+
+	int tam = strlen(r);
+	fwrite(r, sizeof(char), tam, arq);
+
+	// insere o restante com lixo
+	int tam_lixo = tam_campo - tam;
+	if (tam_lixo <= 0) {
+		return SUCESSO;
+	}
+
+	escreverLixo(arq, tam_lixo);
+
+	return SUCESSO;
+}
+
+// Insere um char em um campo de tamanho fixo no arquivo
+int inserirCharCampoFixo (char r, size_t tam_campo, FILE* arq) {
+	if (!charValido(r)) {
+		escreverLixo(arq, tam_campo);
+		return SUCESSO;
+	}
+
+	// insere os dados
+	fwrite(&r, sizeof(char), 1, arq);
+
+	// insere o restante com lixo
+	int tam_lixo = tam_campo - 1;
+	if (tam_lixo <= 0) {
+		return SUCESSO;
+	}
+
+	escreverLixo(arq, tam_lixo);
+
 	return SUCESSO;
 }
 
 // Insere um campo de tamanho variável no arquivo
 int inserirCampoVariavel (void* r, FILE* arq) {
-	int tam = strlen(r);
-	fwrite(r, sizeof(char), tam, arq);
-	fwrite("|", sizeof(char), 1, arq);
+	// nao coloca o /0 no final
+	if (stringValida(r)) {
+		int tam = strlen(r);
+		fwrite(r, sizeof(char), tam, arq);
+	}
+
+	fwrite(STR_DELIMITADOR, sizeof(char), 1, arq);
+	return SUCESSO;
+}
+
+// Escreve cabecalho 'c' no arquivo 'arq'
+int escreveCabecalhoArquivo (FILE* arq, Cabecalho* c) {
+	inserirCampoFixo(&c->status, sizeof(char), 1, sizeof(char), arq);
+	inserirCampoFixo(&c->topo, sizeof(int), 1, sizeof(int), arq);
+	inserirCampoFixo(&c->proxRRN, sizeof(int), 1, sizeof(int), arq);
+	inserirCampoFixo(&c->nroRegRem, sizeof(int), 1, sizeof(int), arq);
+	inserirCampoFixo(&c->nroPagDisco, sizeof(int), 1, sizeof(int), arq);
+	inserirCampoFixo(&c->qttCompacta, sizeof(int), 1, sizeof(int), arq);
+
+	// Preenche o resto da página com lixo
+	escreverLixo(arq, TAM_PG_DISCO - TAM_CABECALHO);
 
 	return SUCESSO;
 }
 
-int escreveCabecalhoArquivo (FILE* arq, Cabecalho* c) {
-	inserirCampoFixo(&c->status, sizeof(char), 1, arq);
-	inserirCampoFixo(&c->topo, sizeof(int), 1, arq);
-	inserirCampoFixo(&c->proxRRN, sizeof(int), 1, arq);
-	inserirCampoFixo(&c->nroRegRem, sizeof(int), 1, arq);
-	inserirCampoFixo(&c->nroPagDisco, sizeof(int), 1, arq);
-	inserirCampoFixo(&c->qttCompacta, sizeof(int), 1, arq);
-
-	// Preenche o resto da página com lixo
-	fprintf(arq, "%*c", TAM_PG_DISCO - TAM_CABECALHO, '$');
+// Escreve lixo no arquivo 'arq' até completar 'tam' bytes
+int escreverLixo(FILE *arq, size_t tam) {
+	char strLixo[tam + 1];
+	for (int i = 0; i < tam; i++) {
+		strLixo[i] = LIXO;
+	}
+	strLixo[tam] = '\0';
+	fwrite(strLixo, sizeof(char), tam, arq);
 
 	return SUCESSO;
 }
