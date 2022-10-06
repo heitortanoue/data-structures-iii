@@ -8,6 +8,8 @@
 
 // Cria um novo registro e aloca memoria para suas strings
 int criaRegistro (Registro *r) {
+    r->removido = 0;
+    r->encadeamento = -1;
     r->siglaPais = (char*) malloc(sizeof(char) * (TAM_SIGLA + 1));
     r->nomePoPs = (char*) malloc(sizeof(char) * TAM_STRING);
     r->nomePais = (char*) malloc(sizeof(char) * TAM_STRING);

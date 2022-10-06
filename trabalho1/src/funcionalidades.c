@@ -71,9 +71,9 @@ int funcionalidade2 () {
     criaRegistro(&r);
 
     for (int i = 0; i < qtdRegs; i++) {
-        // lerRegistroArquivo(bin, &r);
-        // imprimeRegistro(&r);
-        imprimeRegistroRaw(bin);
+        lerRegistroArquivo(bin, &r);
+        imprimeRegistro(&r);
+        // imprimeRegistroRaw(bin);
     }
 
     destroiRegistro(&r);
