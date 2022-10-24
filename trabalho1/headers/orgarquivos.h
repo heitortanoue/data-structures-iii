@@ -14,6 +14,7 @@ int inserirRegistroArquivo(FILE *arq, Registro* r);
 int lerRegistroArquivo(FILE *arq, Registro* r);
 void binarioNaTela(char *nomeArquivoBinario);
 int escreveCabecalhoArquivo (FILE* arq, Cabecalho* c);
+void scan_quote_string(char *str);
 
 int inserirCampoFixo (void* r, size_t size_dado, size_t num_dado, size_t tam_campo, FILE* arq);
 int inserirStringCampoFixo (char* r, size_t tam_campo, FILE* arq);
@@ -24,5 +25,8 @@ int lerCampoFixo (FILE *arq, void *campo, int tam_campo, int qtd_campo);
 int lerStringCampoFixo (FILE *arq, char *campo, int tam_campo);
 int lerStringCampoVariavel (FILE *arq, char *campo);
 int escreverLixo(FILE *arq, size_t tam);
+
+int trataFiltros(Busca *filtros, char *campo, char **criterios);
+int testaRegistro (Registro reg, Busca *filtro, int numFiltro);
 
 #endif

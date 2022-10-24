@@ -1,11 +1,12 @@
 CC          := gcc
 DEBUG_FLAGS := -g3 -pedantic -Werror=implicit-function-declaration -fsanitize=address,undefined
-FLAGS       := -Wall -Werror $(DEBUG_FLAGS)
+FLAGS       := -Wall -Werror #$(DEBUG_FLAGS)
 
 SRC         := ./src
 BIN         := ./bin
+BINNAME     := bin
 HEADERS     := ./headers
-EXEC        := prog
+EXEC        := prog.exe
 ZIP         := exercicio.zip
 
 # List of all expected $(BIN)/*.o
@@ -25,7 +26,7 @@ clean:
 
 zip:
 	rm -f $(ZIP)
-	zip $(ZIP) Makefile $(HEADERS)/*.h $(SRC)/*.c
+	zip $(ZIP) Makefile $(HEADERS)/*.h $(SRC)/*.c ./*.bin ./*.csv
 
 $(EXEC): $(ALL)
 	$(CC) -o $(EXEC) $(BIN)/*.o $(FLAGS)
@@ -33,5 +34,5 @@ $(EXEC): $(ALL)
 $(BIN)/%.o: $(SRC)/%.c $(BIN)
 	$(CC) -o $@ -c $< -I $(HEADERS) $(FLAGS)
 
-$(BIN):
-	mkdir -p $(BIN)
+$(BINNAME):
+	mkdir $(BINNAME)

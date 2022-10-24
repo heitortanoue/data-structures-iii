@@ -1,6 +1,6 @@
-#include "csv.h"
-#include "registro.h"
-#include "orgarquivos.h"
+#include "../headers/csv.h"
+#include "../headers/registro.h"
+#include "../headers/orgarquivos.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,9 +28,11 @@ int lerCsvRegistro (Registro *r, char *linha) {
     r->unidadeMedida = validaChar(temp);
 
     meuStrtok(temp, linha, ',');
+    // printf("Velocidade: %d, %d\n", atoi(temp), atoi(temp) == 0);  
     r->velocidade = validaInt(temp);
 
     free(temp);
+
     return SUCESSO;
 }
 
@@ -43,7 +45,12 @@ void meuStrtok (char* pedaco, char *str, char delim) {
         pedaco[i] = str[i];
         i++;
     }
-    pedaco[i] = '\0';
+
+    if (pedaco[i - 1] == ' ') {
+        pedaco[i - 1] = '\0';
+    } else {
+        pedaco[i] = '\0';
+    }
 
     if (str[i] == delim) {
         i++;
@@ -63,7 +70,7 @@ char* validaString (char* str) {
     return str && strlen(str) ? str : "*";
 }
 int validaInt (char* i) {
-    return i && intValido((int) i[0]) ? atoi(i) : -1;
+    return i && intValido(atoi(i)) ? atoi(i) : -1;
 }
 char validaChar (char* c) {
     return c && c[0] != '\0' ? c[0] : '*';

@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "registro.h"
-#include "orgarquivos.h"
-#include "csv.h"
+#include "../headers/registro.h"
+#include "../headers/orgarquivos.h"
+#include "../headers/csv.h"
 #define LIXO '$'
 
 // Cria um novo registro e aloca memoria para suas strings
 int criaRegistro (Registro *r) {
-    r->removido = 0;
+    r->removido = '0';
     r->encadeamento = -1;
     r->siglaPais = (char*) malloc(sizeof(char) * (TAM_SIGLA + 1));
     r->nomePoPs = (char*) malloc(sizeof(char) * TAM_STRING);
@@ -29,7 +29,7 @@ int destroiRegistro (Registro *r) {
 //Chamada da leitura dos campos a cada registro no teclado
 int lerDadosRegistroTeclado(Registro *t) {
     char str[128];
-    t->removido = 0;
+    t->removido = '0';
     t->encadeamento = -1;
 
     scanf("%d", &t->idConecta);
@@ -55,7 +55,7 @@ int copiaStringRegistro (char* destino, char* origem, int tam) {
 
 // Indica se o registro foi removido logicamente
 int registroRemovido (Registro *r) {
-    return r->removido == 0;
+    return r->removido == REMOVIDO;
 }
 
 void readline(char* string){
@@ -145,4 +145,34 @@ int contarRegistros (FILE *arq) {
     fseek(arq, 0, SEEK_SET);
 
     return (tamFinal - tamInicial) / TAM_REGISTRO;
+}
+
+int calculaRRN(long byteoffset){
+    return (byteoffset / TAM_REGISTRO) - 15;
+}
+
+int calculaByteoffset (int rrn){
+    return ((rrn + 15) * TAM_REGISTRO);
+}
+
+int imprimePilha (){
+    char nome_arquivo[128];
+    scanf("%s", nome_arquivo);
+    
+    FILE* bin = abreArquivo(nome_arquivo, "rb");
+
+    Cabecalho c;
+    lerCabecalhoArquivo(bin, &c);
+
+    int pos;
+    pos = c.topo;
+    while (pos != -1){
+        printf("%d\n", pos);
+        
+        fseek(bin, calculaByteoffset(pos) + 1, SEEK_SET);
+        fread(&pos, sizeof(int), 1, bin);
+    }
+    printf("%d\n", pos);
+
+    return SUCESSO;
 }

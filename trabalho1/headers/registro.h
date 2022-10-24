@@ -13,7 +13,7 @@
 #define TAM_STRING 128
 
 #define LIXO '$'
-#define REMOVIDO '*'
+#define REMOVIDO '1'
 #define DELIMITADOR '|'
 #define STR_DELIMITADOR "|"
 
@@ -44,6 +44,14 @@ typedef struct {
     Registro* registros;
 } Arquivo;
 
+typedef struct{
+    char *campo;
+    char **criterios;
+    int tipo_campo;
+    long pagDisco; //pag de disco acessadas
+
+} Busca;
+
 int criaRegistro (Registro *r);
 int destroiRegistro (Registro *r);
 
@@ -52,8 +60,12 @@ int insereStringRegistro (char* str, char* str_registro, int tam_campo);
 void imprimeRegistro (Registro *r);
 int registroRemovido (Registro *r);
 void readline(char* string);
+
 int contarRegistros (FILE *arq);
+int calculaRRN(long byteoffset);
+int calculaByteoffset (int rrn);
 
 void imprimeRegistroRaw (FILE* arq);
+int imprimePilha ();
 
 #endif

@@ -1,5 +1,5 @@
-#include "cabecalho.h"
-#include "orgarquivos.h"
+#include "../headers/cabecalho.h"
+#include "../headers/orgarquivos.h"
 #include <math.h>
 
 // Atualiza o cabeçalho com as informações iniciais
@@ -23,7 +23,7 @@ int atualizarStatusCabecalho (Cabecalho *c, char status) {
 // Atualiza o numero de pagina de disco do arquivo com o parametro 'numRegistros'
 int atualizarNumPagDiscoCabecalho (Cabecalho *c, int numRegistros) {
     // +1 por conta do cabeçalho que ocupa 1 pg de disco
-    c->nroPagDisco = (int) ceil(numRegistros / TAM_PG_DISCO) + 1;
+    c->nroPagDisco = (int) ceil(numRegistros * TAM_REGISTRO / TAM_PG_DISCO) + 1;
     return SUCESSO;
 }
 
