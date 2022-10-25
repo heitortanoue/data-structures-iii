@@ -20,10 +20,14 @@ int atualizarStatusCabecalho (Cabecalho *c, char status) {
     return SUCESSO;
 }
 
+int calculaNumPagDisco ( int numRegistros ) {
+    return (int) ceil(numRegistros * TAM_REGISTRO / TAM_PG_DISCO) + 2;
+}
+
 // Atualiza o numero de pagina de disco do arquivo com o parametro 'numRegistros'
 int atualizarNumPagDiscoCabecalho (Cabecalho *c, int numRegistros) {
     // +1 por conta do cabeçalho que ocupa 1 pg de disco
-    c->nroPagDisco = (int) ceil(numRegistros * TAM_REGISTRO / TAM_PG_DISCO) + 1;
+    c->nroPagDisco = calculaNumPagDisco(numRegistros);
     return SUCESSO;
 }
 

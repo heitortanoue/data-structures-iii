@@ -106,19 +106,15 @@ int selectWhere (void){
     int qtd_filtros;
     scanf("%d", &qtd_filtros);
 
-    char campo[128];
-    char **criterios = malloc(sizeof(char *) * qtd_filtros);
-    for (int i = 0; i < qtd_filtros; i++){
-        criterios[i] = malloc(sizeof(char) * 128);
-    }
+    Busca filtros;
+    criaFiltro(&filtros, qtd_filtros);
     
     for (int i = 0; i < qtd_filtros; i++){
-        scanf("%s", campo);
-        scan_quote_string(criterios[i]);
+        scanf("%s", (filtros.campo)[i]);
+        getchar();
+        scanTeclado((filtros.criterios)[i]);
+        trataFiltros(&filtros, i);
     }
-
-    Busca filtros;
-    trataFiltros(&filtros, campo, criterios);
 
     FILE* bin = abreArquivo(nome_arquivo, "rb");
 
@@ -129,8 +125,10 @@ int selectWhere (void){
     Registro r;
     criaRegistro(&r);
 
+    int regsVisitados = 0;
+
     for (int i = 0; i < qtd_filtros; i++){
-        filtros.pagDisco = 0;
+        regsVisitados = 0;
         int encontrou = 0;
         printf("Busca %d\n", i + 1);
 
@@ -140,18 +138,15 @@ int selectWhere (void){
                 encontrou = 1;
                 imprimeRegistro(&r);
             }
-            filtros.pagDisco++;
+            regsVisitados++;
         }
 
-        filtros.pagDisco = filtros.pagDisco * TAM_REGISTRO / TAM_PG_DISCO;
+        filtros.pagDisco = calculaNumPagDisco(regsVisitados);
         fseek(bin, TAM_PG_DISCO, SEEK_SET);
-        encontrou ? printf("\nNumero de paginas de disco: %ld\n\n", filtros.pagDisco) : printf("Registro inexistente\n");
+        encontrou ? printf("Numero de paginas de disco: %ld\n\n", filtros.pagDisco) : printf("Registro inexistente.\n\nNumero de paginas de disco: %ld\n\n", filtros.pagDisco);
     }
 
-    for (int i = 0; i < qtd_filtros; i++){
-        free(criterios[i]);
-    }
-    free(criterios);
+    destroiFiltro(&filtros);
     destroiRegistro(&r);
     fclose(bin);
 
@@ -166,20 +161,14 @@ int removeRegistro(void){
     int qtd_filtros;
     scanf("%d", &qtd_filtros);
 
-    char campo[128];
-    char **criterios = malloc(sizeof(char *) * qtd_filtros);
-    for (int i = 0; i < qtd_filtros; i++){
-        criterios[i] = malloc(sizeof(char) * 128);
-    }
-
-    //Entrada dos campos e valores a serem excluidos
-    for (int i = 0; i < qtd_filtros; i++){
-        scanf("%s", campo);
-        scan_quote_string(criterios[i]);
-    }
-
     Busca filtros;
-    trataFiltros(&filtros, campo, criterios);
+    criaFiltro(&filtros, qtd_filtros);
+    
+    for (int i = 0; i < qtd_filtros; i++){
+        scanTeclado(filtros.campo[i]);
+        scanTeclado(filtros.criterios[i]);
+        trataFiltros(&filtros, i);
+    }
 
     FILE* bin = abreArquivo(nome_arquivo, "rb+");
 
@@ -214,10 +203,7 @@ int removeRegistro(void){
     escreveCabecalhoArquivo(bin, &c);
     // imprimeCabecalho(&c);
 
-    for (int i = 0; i < qtd_filtros; i++){
-        free(criterios[i]);
-    }
-    free(criterios);
+    destroiFiltro(&filtros);
     destroiRegistro(&r);
     fclose(bin);
 

@@ -45,9 +45,10 @@ typedef struct {
 } Arquivo;
 
 typedef struct{
-    char *campo;
+    char **campo;
     char **criterios;
-    int tipo_campo;
+    int qtdFiltros;
+    int *tipo_campo;
     long pagDisco; //pag de disco acessadas
 
 } Busca;

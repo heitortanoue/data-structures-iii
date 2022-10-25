@@ -6,18 +6,46 @@
 #include "../headers/csv.h"
 #include "../headers/busca.h"
 
+int criaFiltro(Busca *filtros, int qtd){
+	filtros->pagDisco = 0;
+	filtros->qtdFiltros = qtd;
+	filtros->tipo_campo = malloc(sizeof(int) * qtd);
+	filtros->campo = malloc(sizeof(char *) * qtd);
+    for (int i = 0; i < qtd; i++){
+        filtros->campo[i] = malloc(sizeof(char) * 128);
+    }
+	filtros->criterios = malloc(sizeof(char *) * qtd);
+    for (int i = 0; i < qtd; i++){
+        filtros->criterios[i] = malloc(sizeof(char) * 128);
+    }
+
+	return SUCESSO;
+}
+
+int destroiFiltro(Busca *filtros){
+	free(filtros->tipo_campo);
+
+    for (int i = 0; i < filtros->qtdFiltros; i++){
+        free(filtros->campo[i]);
+    }
+	free(filtros->campo);
+
+    for (int i = 0; i < filtros->qtdFiltros; i++){
+        free(filtros->criterios[i]);
+    }
+	free(filtros->criterios);
+		
+	return SUCESSO;
+}
+
 //Trata os filtros identificando o campo e o criterio
-int trataFiltros(Busca *filtros, char *campo, char **criterios){
-	filtros -> campo = campo;
-	filtros -> criterios = criterios;
-	filtros -> pagDisco = 0;
-	
-	if(!strcmp(campo, "idConecta")) filtros -> tipo_campo = 0;
-	if(!strcmp(campo, "nomePoPs")) filtros -> tipo_campo = 1;
-	if(!strcmp(campo, "nomePais")) filtros -> tipo_campo = 2;
-	if(!strcmp(campo, "siglaPais")) filtros -> tipo_campo = 3;
-	if(!strcmp(campo, "idPoPsConectado")) filtros -> tipo_campo = 4;
-	if(!strcmp(campo, "velocidade")) filtros -> tipo_campo = 5;
+int trataFiltros(Busca *filtros, int i){
+	if(!strcmp((filtros->campo)[i], "idConecta")) (filtros -> tipo_campo)[i] = 0;
+	if(!strcmp((filtros->campo)[i], "nomePoPs")) (filtros -> tipo_campo)[i] = 1;
+	if(!strcmp((filtros->campo)[i], "nomePais")) (filtros -> tipo_campo)[i] = 2;
+	if(!strcmp((filtros->campo)[i], "siglaPais")) (filtros -> tipo_campo)[i] = 3;
+	if(!strcmp((filtros->campo)[i], "idPoPsConectado")) (filtros -> tipo_campo)[i] = 4;
+	if(!strcmp((filtros->campo)[i], "velocidade")) (filtros -> tipo_campo)[i] = 5;
 
 	return SUCESSO;
 }
@@ -27,7 +55,7 @@ int testaRegistro (Registro reg, Busca *filtro, int numFiltro){
 	if (registroRemovido(&reg)){
 		return 0;
 	} else {
-		switch (filtro->tipo_campo)
+		switch (filtro->tipo_campo[numFiltro])
 		{
 		case 0:
 			if (reg.idConecta == atoi(filtro->criterios[numFiltro])) valido = 1;
@@ -50,7 +78,7 @@ int testaRegistro (Registro reg, Busca *filtro, int numFiltro){
 		default:
 			break;
 		}
-
+		//printf("%d\n", valido);
 		return valido;
 	}
 }

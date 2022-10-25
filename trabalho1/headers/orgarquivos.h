@@ -25,8 +25,6 @@ int lerCampoFixo (FILE *arq, void *campo, int tam_campo, int qtd_campo);
 int lerStringCampoFixo (FILE *arq, char *campo, int tam_campo);
 int lerStringCampoVariavel (FILE *arq, char *campo);
 int escreverLixo(FILE *arq, size_t tam);
-
-int trataFiltros(Busca *filtros, char *campo, char **criterios);
 int testaRegistro (Registro reg, Busca *filtro, int numFiltro);
 
 #endif

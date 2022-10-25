@@ -3,8 +3,11 @@
 
 #include "registro.h"
 #include <stdio.h>
+#include <stdlib.h>
 
-int trataFiltros(Busca *filtros, char *campo, char **criterios);
+int criaFiltro(Busca *filtros, int qtd);
+int destroiFiltro(Busca *filtros);
+int trataFiltros(Busca *filtros, int i);
 int testaRegistro (Registro reg, Busca *filtro, int numFiltro);
 
 #endif
