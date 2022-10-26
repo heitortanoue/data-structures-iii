@@ -14,6 +14,7 @@
 
 #define LIXO '$'
 #define REMOVIDO '1'
+#define STR_REMOVIDO "1"
 #define DELIMITADOR '|'
 #define STR_DELIMITADOR "|"
 
@@ -68,5 +69,6 @@ int calculaByteoffset (int rrn);
 
 void imprimeRegistroRaw (FILE* arq);
 int imprimePilha ();
+void* alocaMemoria (size_t s);
 
 #endif

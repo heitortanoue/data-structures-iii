@@ -176,3 +176,12 @@ int imprimePilha (){
 
     return SUCESSO;
 }
+
+void* alocaMemoria (size_t s) {
+    void* ptr = malloc(s);
+    if (ptr == NULL) {
+        printf("Erro de alocacao de memoria\n");
+        exit(1);
+    }
+    return ptr;
+}

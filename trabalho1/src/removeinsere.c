@@ -11,7 +11,7 @@
 //Remove o registro de RRN recebido
 int remocaoReg(FILE *arq, int rrn, Cabecalho *c){
     fseek(arq, calculaByteoffset(rrn), SEEK_SET);
-    fwrite("*", sizeof(char), 1, arq);
+    fwrite(STR_REMOVIDO, sizeof(char), 1, arq);
 
     int topo = c->topo; //atualiza pilha no registro logicamente removido
     fwrite(&topo, sizeof(int), 1, arq);
@@ -29,12 +29,12 @@ int remocaoReg(FILE *arq, int rrn, Cabecalho *c){
 
 //Le os dados do teclado e salva na struct reg
 int entradaDados(Registro *reg){
-    char **dados_string = malloc(sizeof(char *) * 7);
+    char **dados_string = (char **) alocaMemoria(sizeof(char *) * 7);
     for (int i = 0; i < 7; i++){
-        dados_string[i] = malloc(sizeof(char) * TAM_REGISTRO);
+        dados_string[i] = (char * ) alocaMemoria(sizeof(char) * TAM_REGISTRO);
     }
 
-    getchar();
+    
     for (int i = 0; i < 7; i++){
         scanTeclado(dados_string[i]); //le ate espaço ou \n removendo as aspas se tiver
         if(!strcmp(dados_string[i], "NULO")){
@@ -54,18 +54,15 @@ int entradaDados(Registro *reg){
 
 //adiciona os dados em string para uma struct registro
 int trataDados(Registro *reg, char **dados_string){
-    reg->idConecta = atoi(dados_string[0]);
+    reg->idConecta = validaInt(dados_string[0]);
 
-    reg->nomePoPs = dados_string[1];
-    reg->nomePais = dados_string[2];
-    reg->siglaPais = dados_string[3];
+    strcpy(reg->nomePoPs, dados_string[1]);
+    strcpy(reg->nomePais, dados_string[2]);
+    strcpy(reg->siglaPais, dados_string[3]);
 
-    reg->idPoPsConectado = atoi(dados_string[4]);
-
-    reg->unidadeMedida = dados_string[5][0];
-
-    reg->velocidade = atoi(dados_string[6]);
-
+    reg->idPoPsConectado = validaInt(dados_string[4]);
+    reg->unidadeMedida = validaChar(dados_string[5]);
+    reg->velocidade = validaInt(dados_string[6]);
 
     return SUCESSO;
 }
@@ -78,9 +75,13 @@ int insereRegistro(Registro *reg, Cabecalho *c, FILE *arq){
 
         int proxTopo = 0;
         fwrite(&removido, sizeof(char), 1, arq);
-        fseek(arq, calculaByteoffset(proxRRN) + 1, SEEK_SET);
+        // fseek(arq, calculaByteoffset(proxRRN) + 1, SEEK_SET);
         fread(&proxTopo, sizeof(int), 1, arq);
-        fseek(arq, calculaByteoffset(proxRRN) + 5, SEEK_SET);
+
+        fseek(arq, -4, SEEK_CUR);
+        fwrite(&reg->encadeamento, sizeof(int), 1, arq);
+
+        // fseek(arq, calculaByteoffset(proxRRN) + 5, SEEK_SET);
 
         inserirCampoFixo(&reg->idConecta, sizeof(int), 1, sizeof(int), arq);
         inserirStringCampoFixo(reg->siglaPais, TAM_SIGLA, arq);

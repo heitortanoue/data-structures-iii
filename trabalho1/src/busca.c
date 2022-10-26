@@ -46,6 +46,7 @@ int trataFiltros(Busca *filtros, int i){
 	if(!strcmp((filtros->campo)[i], "siglaPais")) (filtros -> tipo_campo)[i] = 3;
 	if(!strcmp((filtros->campo)[i], "idPoPsConectado")) (filtros -> tipo_campo)[i] = 4;
 	if(!strcmp((filtros->campo)[i], "velocidade")) (filtros -> tipo_campo)[i] = 5;
+    if(!strcmp((filtros->campo)[i], "unidadeMedida")) (filtros -> tipo_campo)[i] = 6;
 
 	return SUCESSO;
 }
@@ -75,6 +76,9 @@ int testaRegistro (Registro reg, Busca *filtro, int numFiltro){
 		case 5:
 			if (reg.velocidade == atoi(filtro->criterios[numFiltro])) valido = 1;
 			break;
+        case 6:
+            if (reg.unidadeMedida == validaChar(filtro->criterios[numFiltro])) valido = 1;
+            break;
 		default:
 			break;
 		}
