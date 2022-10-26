@@ -5,8 +5,8 @@ int debug() {
     FILE* arq1;
     FILE* arq2;
 
-    arq1 = fopen("./debug/binario1.bin", "rb");
-    arq2 = fopen("dados.bin", "rb");
+    arq1 = fopen("./debug/binario17.bin", "rb");
+    arq2 = fopen("binario17.bin", "rb");
 
     if (arq1 == NULL || arq2 == NULL) {
         printf("Erro ao abrir arquivo");

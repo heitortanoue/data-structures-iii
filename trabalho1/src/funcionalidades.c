@@ -277,7 +277,8 @@ int compact(){
     c.topo = -1;
     c.qttCompacta++;
 
-    escreveCabecalhoArquivo(bin, &c);
+    fseek(compacBin, 0, SEEK_SET);
+    escreveCabecalhoArquivo(compacBin, &c);
 
     // imprimeCabecalho(&c);
     fclose(bin);
