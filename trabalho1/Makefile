@@ -6,6 +6,7 @@ SRC         := ./src
 BIN         := ./bin
 BINNAME     := bin
 HEADERS     := ./headers
+FILES 	 	:= $(wildcard ./files/*.bin)
 EXEC        := prog.exe
 ZIP         := exercicio.zip
 
@@ -16,7 +17,9 @@ ALL         := $(ALL:$(SRC)/%.c=$(BIN)/%.o)
 
 all: $(EXEC)
 
-compile: clean all
+compile: clean reset all
+
+crun : compile run
 
 run: all
 	./$(EXEC)
@@ -27,6 +30,10 @@ clean:
 zip:
 	rm -f $(ZIP)
 	zip $(ZIP) Makefile $(HEADERS)/*.h $(SRC)/*.c ./*.bin ./*.csv
+
+reset:
+	rm -f $(ZIP) $(EXEC) ./*.bin
+	cp $(FILES) ./
 
 $(EXEC): $(ALL)
 	$(CC) -o $(EXEC) $(BIN)/*.o $(FLAGS)
