@@ -109,10 +109,15 @@ int insereRegistro(Registro *reg, Cabecalho *c, FILE *arq){
 }
 
 void scanTeclado(char* strDest){
+    //printf("\n");
     char c = getchar();
     if (c != '\"'){
         int i = 0;
-        while(c != ' ' && c != '\n'){
+        while((c != ' ' && c != '\n') || (c > 32 && c < 126)){
+            if (i > 60){
+                break;
+            }
+            //printf("%c | ", c);
             strDest[i] = c;
             c = getchar();
             i++;
@@ -122,6 +127,10 @@ void scanTeclado(char* strDest){
         int i = 0;
         c = getchar();
         while(c != '\"'){
+            if (i > 60){
+                break;
+            }
+            //printf("%c | ", c);
             strDest[i] = c;
             c = getchar();
             i++;
