@@ -36,7 +36,7 @@ int entradaDados(Registro *reg){
 
     
     for (int i = 0; i < 7; i++){
-        scan_quote_string(dados_string[i]); //le ate espaço ou \n removendo as aspas se tiver
+        scanTeclado(dados_string[i]); //le ate espaço ou \n removendo as aspas se tiver
         if(!strcmp(dados_string[i], "NULO")){
             strcpy(dados_string[i], "");
         }
