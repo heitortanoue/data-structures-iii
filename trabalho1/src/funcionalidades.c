@@ -231,7 +231,7 @@ int insert () {
 
     Registro r;
     criaRegistro(&r);    
-    
+
     getchar();
     for (int i = 0; i < qtd_filtros; i++){
         entradaDados(&r);

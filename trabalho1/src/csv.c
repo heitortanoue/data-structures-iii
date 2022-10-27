@@ -86,3 +86,7 @@ int intValido (int i) {
 int charValido (char c) {
     return c != '*';
 }
+
+void printDebug (char *file, int line) {
+    fprintf(stderr, "\nDEBUG [%d] %s\n", line, file);
+}
