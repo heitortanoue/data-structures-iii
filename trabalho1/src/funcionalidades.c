@@ -128,7 +128,7 @@ int selectWhere (void){
     int regsVisitados = 0;
 
     for (int i = 0; i < qtd_filtros; i++){
-        regsVisitados = 1;
+        regsVisitados = 0;
         int encontrou = 0;
         printf("Busca %d\n", i + 1);
 
@@ -165,9 +165,8 @@ int removeRegistro(void){
     criaFiltro(&filtros, qtd_filtros);
     
     for (int i = 0; i < qtd_filtros; i++){
-        scanf("%s", (filtros.campo)[i]);
-        getchar();
-        scanTeclado((filtros.criterios)[i]);
+        scanTeclado(filtros.campo[i]);
+        scanTeclado(filtros.criterios[i]);
         trataFiltros(&filtros, i);
     }
 
@@ -200,7 +199,6 @@ int removeRegistro(void){
         remocaoReg(bin, regsExcluidos[i], &c);
     }
 
-    fseek(bin, 0, SEEK_SET);
     atualizarStatusCabecalho(&c, '1');
     escreveCabecalhoArquivo(bin, &c);
     // imprimeCabecalho(&c);
@@ -208,7 +206,7 @@ int removeRegistro(void){
     destroiFiltro(&filtros);
     destroiRegistro(&r);
     fclose(bin);
-    free(regsExcluidos);
+
 
     binarioNaTela(nome_arquivo);
 
@@ -231,7 +229,6 @@ int insert () {
 
     Registro r;
     criaRegistro(&r);    
-    
     getchar();
     for (int i = 0; i < qtd_filtros; i++){
         entradaDados(&r);
@@ -243,7 +240,6 @@ int insert () {
     atualizarNumPagDiscoCabecalho(&c, c.proxRRN);
     escreveCabecalhoArquivo(bin, &c);
     // imprimeCabecalho(&c);
-    destroiRegistro(&r);
     fclose(bin);
 
     binarioNaTela(nome_arquivo);
