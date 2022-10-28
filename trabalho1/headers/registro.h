@@ -4,17 +4,25 @@
 #include "cabecalho.h"
 #include <stdio.h>
 
+// Quantidade de bytes do campo 'siglaPais'
 #define TAM_SIGLA 2
-#define TAM_STATUS 1
 
+// Quantidade de bytes do registro de dados
 #define TAM_PG_DISCO 960
+// Quantidade de bytes do registro de dados
 #define TAM_REGISTRO 64
+// Quantidade de bytes da parte de tamanho fixo do registro de dados
 #define TAM_REGISTRO_FIXO 20
+// Quantidade de bytes a serem alocados para manipulacao de strings
 #define TAM_STRING 128
 
+// Caractere padrao para preencher bytes vazios do registro
 #define LIXO '$'
+// Caracteres padrao para remocao logica
 #define REMOVIDO '1'
 #define STR_REMOVIDO "1"
+#define NAO_REMOVIDO '0'
+// Caractere delimitador de campos de tamanho variavel
 #define DELIMITADOR '|'
 #define STR_DELIMITADOR "|"
 

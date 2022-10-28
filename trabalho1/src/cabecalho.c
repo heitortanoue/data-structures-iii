@@ -2,7 +2,7 @@
 #include "../headers/orgarquivos.h"
 #include <math.h>
 
-// Atualiza o cabeçalho com as informações iniciais
+// Atualiza o cabeçalho com as informações default
 int atualizarCabecalhoPadrao (Cabecalho *c ) {
 	c->status = 0;
     c->topo = -1;
@@ -20,13 +20,18 @@ int atualizarStatusCabecalho (Cabecalho *c, char status) {
     return SUCESSO;
 }
 
+// Calcula quantas paginas de disco uma quantidade de regs. ocupam contando com a pag. do cabecalho
 int calculaNumPagDisco ( int numRegistros ) {
-    return (ceil((double) numRegistros * TAM_REGISTRO / TAM_PG_DISCO)) + 1;
+    float numBytes = numRegistros * TAM_REGISTRO;
+    float numBytesTotal = numBytes + TAM_PG_DISCO;
+    float numPagDisco = numBytesTotal / TAM_PG_DISCO;
+    int pagDisco = (int) ceil(numPagDisco);
+
+    return pagDisco;
 }
 
 // Atualiza o numero de pagina de disco do arquivo com o parametro 'numRegistros'
 int atualizarNumPagDiscoCabecalho (Cabecalho *c, int numRegistros) {
-    // +1 por conta do cabeçalho que ocupa 1 pg de disco
     c->nroPagDisco = calculaNumPagDisco(numRegistros);
     return SUCESSO;
 }
@@ -45,7 +50,7 @@ int lerCabecalhoArquivo (FILE *arq, Cabecalho *c) {
     return SUCESSO;
 }
 
-// Imprime o cabeçalho 'c'
+// Imprime o cabeçalho 'c' para visualizacao
 void imprimeCabecalho (Cabecalho *c) {
     printf("\n======  Cabecalho  ======\n");
     printf("status: %c\n", c->status);

@@ -10,6 +10,5 @@ int stringValida (char* str);
 int intValido (int i);
 int charValido (char c);
 void meuStrtok (char* pedaco, char *str, char delim);
-void printDebug (char *file, int line);
 
 #endif

@@ -6,22 +6,26 @@
 #include "../headers/csv.h"
 #include "../headers/busca.h"
 
+// Cria a struct dos dados de busca
 int criaFiltro(Busca *filtros, int qtd){
-	filtros->pagDisco = 0;
-	filtros->qtdFiltros = qtd;
-	filtros->tipo_campo = malloc(sizeof(int) * qtd);
-	filtros->campo = malloc(sizeof(char *) * qtd);
+	filtros->pagDisco = 0; //paginas de discos acessadas
+	filtros->qtdFiltros = qtd; //num. de criterios de busca
+
+	filtros->tipo_campo = (int*) alocaMemoria(sizeof(int) * qtd); //id dos campos
+	filtros->campo = (char**) alocaMemoria(sizeof(char *) * qtd);  //campos string
     for (int i = 0; i < qtd; i++){
-        filtros->campo[i] = malloc(sizeof(char) * 128);
+        filtros->campo[i] = (char*) alocaMemoria(sizeof(char) * 128);
     }
-	filtros->criterios = malloc(sizeof(char *) * qtd);
+
+	filtros->criterios = (char**) alocaMemoria(sizeof(char *) * qtd); //valores string
     for (int i = 0; i < qtd; i++){
-        filtros->criterios[i] = malloc(sizeof(char) * 128);
+        filtros->criterios[i] = (char*) alocaMemoria(sizeof(char) * 128);
     }
 
 	return SUCESSO;
 }
 
+// Desaloca a struct de busca
 int destroiFiltro(Busca *filtros){
 	free(filtros->tipo_campo);
 
@@ -38,7 +42,7 @@ int destroiFiltro(Busca *filtros){
 	return SUCESSO;
 }
 
-//Trata os filtros identificando o campo e o criterio
+// Trata os filtros identificando o campo e o criterio
 int trataFiltros(Busca *filtros, int i){
 	if(!strcmp((filtros->campo)[i], "idConecta")) (filtros -> tipo_campo)[i] = 0;
 	if(!strcmp((filtros->campo)[i], "nomePoPs")) (filtros -> tipo_campo)[i] = 1;
@@ -51,6 +55,7 @@ int trataFiltros(Busca *filtros, int i){
 	return SUCESSO;
 }
 
+// Compara o registro com o critério de busca - return 1 se for compativel com o criterio 0 se nao
 int testaRegistro (Registro reg, Busca *filtro, int numFiltro){
 	int valido = 0;
 	if (registroRemovido(&reg)){
@@ -82,7 +87,6 @@ int testaRegistro (Registro reg, Busca *filtro, int numFiltro){
 		default:
 			break;
 		}
-		//printf("%d\n", valido);
 		return valido;
 	}
 }

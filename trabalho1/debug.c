@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Funcao apenas com a finalidade de debugar um arquivo binario indicando quais bytes sao diferentes do arquivo de referencia
 int debug() {
     FILE* arq1;
     FILE* arq2;

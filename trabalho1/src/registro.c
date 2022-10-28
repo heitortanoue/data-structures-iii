@@ -8,11 +8,11 @@
 
 // Cria um novo registro e aloca memoria para suas strings
 int criaRegistro (Registro *r) {
-    r->removido = '0';
+    r->removido = NAO_REMOVIDO;
     r->encadeamento = -1;
-    r->siglaPais = (char*) malloc(sizeof(char) * (TAM_SIGLA + 1));
-    r->nomePoPs = (char*) malloc(sizeof(char) * TAM_STRING);
-    r->nomePais = (char*) malloc(sizeof(char) * TAM_STRING);
+    r->siglaPais = (char*) alocaMemoria(sizeof(char) * (TAM_SIGLA + 1));
+    r->nomePoPs = (char*) alocaMemoria(sizeof(char) * TAM_STRING);
+    r->nomePais = (char*) alocaMemoria(sizeof(char) * TAM_STRING);
 
     return SUCESSO;
 }
@@ -29,7 +29,7 @@ int destroiRegistro (Registro *r) {
 //Chamada da leitura dos campos a cada registro no teclado
 int lerDadosRegistroTeclado(Registro *t) {
     char str[128];
-    t->removido = '0';
+    t->removido = NAO_REMOVIDO;
     t->encadeamento = -1;
 
     scanf("%d", &t->idConecta);
@@ -127,7 +127,7 @@ void imprimeRegistro (Registro *r ) {
     printf("\n");
 }
 
-// Função auxiliar para impressao do registro inteiro
+// Função auxiliar debugger para impressao do registro inteiro
 void imprimeRegistroRaw (FILE* arq) {
     for (int i = 0; i < TAM_REGISTRO; i++) {
         char c = fgetc(arq);
@@ -147,14 +147,19 @@ int contarRegistros (FILE *arq) {
     return (tamFinal - tamInicial) / TAM_REGISTRO;
 }
 
+//Funcoes de calculo
+
+// Calcula o RRN de um registro atraves do seu ByteOffset
 int calculaRRN(long byteoffset){
     return (byteoffset / TAM_REGISTRO) - 15;
 }
 
+// Calcula o ByteOffset de um registro atraves do seu RRN
 int calculaByteoffset (int rrn){
     return ((rrn + 15) * TAM_REGISTRO);
 }
 
+//Imprime os RRN da pilha de reg. removidos
 int imprimePilha (){
     char nome_arquivo[128];
     scanf("%s", nome_arquivo);
@@ -166,6 +171,7 @@ int imprimePilha (){
 
     int pos;
     pos = c.topo;
+    // Enquanto a pilha nao for -1, imprime e vai para o proximo valor
     while (pos != -1){
         printf("%d\n", pos);
         
@@ -177,6 +183,7 @@ int imprimePilha (){
     return SUCESSO;
 }
 
+//Funcao para alocar uma quantidade s na memoria e padronizar o tratamento de erro
 void* alocaMemoria (size_t s) {
     void* ptr = malloc(s);
     if (ptr == NULL) {

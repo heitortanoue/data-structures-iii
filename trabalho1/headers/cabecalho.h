@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+// Quantidade de bytes do cabeçalho
 #define TAM_CABECALHO 21
 
 // Tamanho fixo de 21 bytes mas alocar em uma pagina de disco inteira (960 bytes)

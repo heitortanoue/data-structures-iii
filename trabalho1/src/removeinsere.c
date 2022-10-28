@@ -8,7 +8,7 @@
 #include "../headers/busca.h"
 #include "../headers/removeinsere.h"
 
-//Remove o registro de RRN recebido
+// Remove o registro de RRN recebido
 int remocaoReg(FILE *arq, int rrn, Cabecalho *c){
     fseek(arq, calculaByteoffset(rrn), SEEK_SET);
     fwrite(STR_REMOVIDO, sizeof(char), 1, arq);
@@ -27,7 +27,7 @@ int remocaoReg(FILE *arq, int rrn, Cabecalho *c){
     return SUCESSO;
 }
 
-//Le os dados do teclado e salva na struct reg
+// Le os dados do teclado e salva na struct reg
 int entradaDados(Registro *reg){
     char **dados_string = (char **) alocaMemoria(sizeof(char *) * 7);
     for (int i = 0; i < 7; i++){
@@ -52,7 +52,7 @@ int entradaDados(Registro *reg){
     return SUCESSO;
 }
 
-//adiciona os dados em string para uma struct registro
+// Adiciona os dados em string para uma struct registro
 int trataDados(Registro *reg, char **dados_string){
     reg->idConecta = validaInt(dados_string[0]);
 
@@ -66,23 +66,23 @@ int trataDados(Registro *reg, char **dados_string){
 
     return SUCESSO;
 }
-//insere o novo registro no arquivo atualizando a pilha
-int insereRegistro(Registro *reg, Cabecalho *c, FILE *arq){
-    int proxRRN = c->topo;
-    char removido = reg->removido;
-    if(proxRRN >= 0){
-        fseek(arq, calculaByteoffset(proxRRN), SEEK_SET);
 
+// Insere o novo registro no arquivo atualizando a pilha
+int insereRegistro(Registro *reg, Cabecalho *c, FILE *arq){
+    int RRNInsercao = c->topo;
+    char removido = reg->removido;
+
+    if(RRNInsercao >= 0){ //se tiver campo logicamente removido insere nele
+        fseek(arq, calculaByteoffset(RRNInsercao), SEEK_SET);
+
+        //salva o proximo registro da pilha e atualiza a informacoes iniciais do novo registro
         int proxTopo = 0;
         fwrite(&removido, sizeof(char), 1, arq);
-        // fseek(arq, calculaByteoffset(proxRRN) + 1, SEEK_SET);
         fread(&proxTopo, sizeof(int), 1, arq);
-
         fseek(arq, -4, SEEK_CUR);
         fwrite(&reg->encadeamento, sizeof(int), 1, arq);
 
-        // fseek(arq, calculaByteoffset(proxRRN) + 5, SEEK_SET);
-
+        //insere os dados
         inserirCampoFixo(&reg->idConecta, sizeof(int), 1, sizeof(int), arq);
         inserirStringCampoFixo(reg->siglaPais, TAM_SIGLA, arq);
 
@@ -93,14 +93,18 @@ int insereRegistro(Registro *reg, Cabecalho *c, FILE *arq){
 	    inserirCampoVariavel(reg->nomePoPs, arq);
 	    inserirCampoVariavel(reg->nomePais, arq);
 
-        int tam_inicial = calculaByteoffset(proxRRN);
+        //completa com lixo
+        int tam_inicial = calculaByteoffset(RRNInsercao);
         int tam_final = ftell(arq);
 	    int tam = tam_final - tam_inicial;
 	    int tam_lixo = TAM_REGISTRO - tam;
 	    escreverLixo(arq, tam_lixo);
+
+        //atualiza o topo
         c->topo = proxTopo;
         c->nroRegRem--;
-    } else {
+
+    } else { //insere no final
         fseek(arq, calculaByteoffset(c->proxRRN), SEEK_SET);
         inserirRegistroArquivo(arq, reg);
         c->proxRRN++;
@@ -108,29 +112,27 @@ int insereRegistro(Registro *reg, Cabecalho *c, FILE *arq){
     return SUCESSO;
 }
 
+// Le um campo do novo registro removendo as aspas
 void scanTeclado(char* strDest){
-    //printf("\n");
     char c = getchar();
-    if (c != '\"'){
+    if (c != '\"'){ //se for uma entrada sem aspas le ate o proximo espaco, enter ou valor invalido
         int i = 0;
         while((c != ' ' && c != '\n') || (c > 32 && c < 126)){
             if (i > 60){
                 break;
             }
-            //printf("%c | ", c);
             strDest[i] = c;
             c = getchar();
             i++;
         }
         strDest[i] = '\0';
-    } else {
+    } else { //se for uma entrada com aspas le ate a proxima aspas
         int i = 0;
         c = getchar();
         while(c != '\"'){
             if (i > 60){
                 break;
             }
-            //printf("%c | ", c);
             strDest[i] = c;
             c = getchar();
             i++;

@@ -85,7 +85,7 @@ int lerCampoFixo (FILE *arq, void *campo, int tam_campo, int qtd_campo) {
 
 // Leitura de uma string em um campo de tamanho fixo com 'tam_campo' bytes
 int lerStringCampoFixo (FILE *arq, char *campo, int tam_campo) {
-	char *aux = (char*) malloc(sizeof(char) * (tam_campo + 1));
+	char *aux = (char*) alocaMemoria(sizeof(char) * (tam_campo + 1));
 	lerCampoFixo(arq, aux, sizeof(char), tam_campo);
 
 	int i = 0;

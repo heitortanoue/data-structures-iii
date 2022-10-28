@@ -10,7 +10,7 @@
 #include <math.h>
 
 
-// CREATE TABLE - Cria uma tabela com os campos especificados com base em um arquivo CSV
+// FUNCIONALIDADE 1 - Cria uma tabela com os campos especificados com base em um arquivo .CSV
 int createTable (void) {
     char nome_arquivo_entrada[128];
     scanf("%s", nome_arquivo_entrada);
@@ -61,7 +61,7 @@ int createTable (void) {
     return SUCESSO;
 }
 
-// SELECT FROM - Imprime todos os registros de uma tabela
+// FUNCIONALIDADE 2 - Imprime todos os registros de uma tabela
 int selectFrom () {
     char nome_arquivo[128];
     scanf("%s", nome_arquivo);
@@ -98,7 +98,7 @@ int selectFrom () {
     return SUCESSO;
 }
 
-//SELECT WHERE - imprime todos os registros que contém o(s) campo(s) especificado(s)
+//FUNCIONALIDADE 3 - Imprime todos os registros que contém o(s) campo(s) especificado(s)
 int selectWhere (void){
     char nome_arquivo[128];
     scanf("%s", nome_arquivo);
@@ -109,11 +109,12 @@ int selectWhere (void){
     Busca filtros;
     criaFiltro(&filtros, qtd_filtros);
     
+    //salva os filtros na ordem
     for (int i = 0; i < qtd_filtros; i++){
         scanf("%s", (filtros.campo)[i]);
         getchar();
-        scanTeclado((filtros.criterios)[i]);
-        trataFiltros(&filtros, i);
+        scanTeclado((filtros.criterios)[i]); //entrada do teclado removendo aspas
+        trataFiltros(&filtros, i); //identifica o campo
     }
 
     FILE* bin = abreArquivo(nome_arquivo, "rb");
@@ -128,19 +129,20 @@ int selectWhere (void){
     int regsVisitados = 0;
 
     for (int i = 0; i < qtd_filtros; i++){
-        regsVisitados = 0;
+        regsVisitados = 1;
         int encontrou = 0;
         printf("Busca %d\n", i + 1);
 
         for (int j = 0; j < qtdRegs; j++) {
             lerRegistroArquivo(bin, &r);
-            if(testaRegistro(r, &filtros, i)){
+            if(testaRegistro(r, &filtros, i)){ //se tiver o campo de busca imprime
                 encontrou = 1;
                 imprimeRegistro(&r);
             }
             regsVisitados++;
         }
 
+        //calcula a quantidade de pag. de discos acessadas
         filtros.pagDisco = calculaNumPagDisco(regsVisitados);
         fseek(bin, TAM_PG_DISCO, SEEK_SET);
         encontrou ? printf("Numero de paginas de disco: %ld\n\n", filtros.pagDisco) : printf("Registro inexistente.\n\nNumero de paginas de disco: %ld\n\n", filtros.pagDisco);
@@ -153,7 +155,7 @@ int selectWhere (void){
     return SUCESSO;
 }
 
-//Remove todos os registros que possuem o campo especifícado na entrada
+//FUNCIONALIDADE 4 - Remove todos os registros que possuem o campo especifícado na entrada
 int removeRegistro(void){
     char nome_arquivo[128];
     scanf("%s", nome_arquivo);
@@ -164,10 +166,12 @@ int removeRegistro(void){
     Busca filtros;
     criaFiltro(&filtros, qtd_filtros);
     
+    //Entrada dos campos e valores a serem excluidos
     for (int i = 0; i < qtd_filtros; i++){
-        scanTeclado(filtros.campo[i]);
-        scanTeclado(filtros.criterios[i]);
-        trataFiltros(&filtros, i);
+        scanf("%s", (filtros.campo)[i]);
+        getchar();
+        scanTeclado((filtros.criterios)[i]);
+        trataFiltros(&filtros, i); //identifica os campos
     }
 
     FILE* bin = abreArquivo(nome_arquivo, "rb+");
@@ -179,7 +183,8 @@ int removeRegistro(void){
     Registro r;
     criaRegistro(&r);
 
-    int *regsExcluidos = malloc(sizeof(int) * qtdRegs);
+    //encontra os registros a serem excluidos, salvando seu RRN em regExcluidos
+    int *regsExcluidos = (int*) alocaMemoria(sizeof(int) * qtdRegs);
     int auxi = 0;
     int posAtual;
     for (int i = 0; i < qtd_filtros; i++){
@@ -195,25 +200,26 @@ int removeRegistro(void){
         fseek(bin, TAM_PG_DISCO, SEEK_SET);
     }
 
+    //remove os registros marcados
     for(int i = 0; i<auxi; i++){
         remocaoReg(bin, regsExcluidos[i], &c);
     }
 
+    fseek(bin, 0, SEEK_SET);
     atualizarStatusCabecalho(&c, '1');
     escreveCabecalhoArquivo(bin, &c);
-    // imprimeCabecalho(&c);
 
     destroiFiltro(&filtros);
     destroiRegistro(&r);
     fclose(bin);
-
+    free(regsExcluidos);
 
     binarioNaTela(nome_arquivo);
 
     return SUCESSO;
 }
 
-//Insere um registro novo no arquivo no lugar de um reg. logicamente removido ou no final do arquivo
+//FUNCIONALIDADE 5 - Insere um registro novo no arquivo no lugar de um reg. logicamente removido ou no final do arquivo
 int insert () {
     char nome_arquivo[128];
     scanf("%s", nome_arquivo);
@@ -225,28 +231,32 @@ int insert () {
 
     Cabecalho c;
     lerCabecalhoArquivo(bin, &c);
-    // imprimeCabecalho(&c);
 
     Registro r;
-    criaRegistro(&r);
+    criaRegistro(&r);    
+
+    //le todos os dados a serem inseridos e insere no topo da pilha (n vezes)
     getchar();
     for (int i = 0; i < qtd_filtros; i++){
         entradaDados(&r);
         insereRegistro(&r, &c, bin);
     }
 
+    //atualiza o cabecalho
     fseek(bin, 0, SEEK_SET);
     atualizarStatusCabecalho(&c, '1');
     atualizarNumPagDiscoCabecalho(&c, c.proxRRN);
     escreveCabecalhoArquivo(bin, &c);
-    // imprimeCabecalho(&c);
+
+    //encerra a funcao
+    destroiRegistro(&r);
     fclose(bin);
 
     binarioNaTela(nome_arquivo);
     return SUCESSO;
 }
 
-//Compacta o arquivo removendo os registros excluidos
+//FUNCIONALIDADE 6 - Compacta o arquivo removendo os registros excluidos
 int compact(){
     char nome_arquivo[128];
     scanf("%s", nome_arquivo);
@@ -262,6 +272,7 @@ int compact(){
     Registro r;
     criaRegistro(&r);
 
+    //se nao for removido copia no arquivo novoBinario
     int qtdRegValido = 0;
     for (int i = 0; i < qtdRegs; i++){
         if(!lerRegistroArquivo(bin, &r)){
@@ -270,6 +281,7 @@ int compact(){
         }
     }
 
+    //atualiza o cabecalho do arquivo
     atualizarStatusCabecalho(&c, '1');
     atualizarNumPagDiscoCabecalho(&c, qtdRegValido);
     c.nroRegRem = 0;
@@ -280,10 +292,10 @@ int compact(){
     fseek(compacBin, 0, SEEK_SET);
     escreveCabecalhoArquivo(compacBin, &c);
 
-    // imprimeCabecalho(&c);
     fclose(bin);
     fclose(compacBin);
 
+    //remove o arquivo antigo e renomeia o arquivo novo
     remove(nome_arquivo);
     rename("novoBinario.bin", nome_arquivo);
 

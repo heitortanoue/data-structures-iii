@@ -4,8 +4,16 @@
 #include "../headers/removeinsere.h"
 
 /*
-Heitor Tanoue de Mello - NUSP: 12547260
-Pedro Oliveira Torrente - NUSP: 11798853
+    [TRABALHO1 - ESTRUTURA DE DADOS III - 2022/2]
+    ---------------------------------------------
+    
+    ->  Heitor Tanoue de Mello
+        NUSP: 12547260
+        100% da sua parte
+
+    ->  Pedro Oliveira Torrente
+        NUSP: 11798853
+        100% da sua parte
 */
 
 int main () {
