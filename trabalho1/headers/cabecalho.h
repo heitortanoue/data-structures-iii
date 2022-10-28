@@ -20,6 +20,7 @@ int atualizarCabecalhoPadrao (Cabecalho *c);
 int atualizarStatusCabecalho (Cabecalho *c, char status);
 int atualizarNumPagDiscoCabecalho (Cabecalho *c, int numRegistros);
 int lerCabecalhoArquivo (FILE *arq, Cabecalho *c);
+int testaStatusCabecalho (Cabecalho *c);
 void imprimeCabecalho (Cabecalho *c);
 int calculaNumPagDisco ( int numRegistros );
 

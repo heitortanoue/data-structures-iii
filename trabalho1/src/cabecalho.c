@@ -4,7 +4,7 @@
 
 // Atualiza o cabeçalho com as informações default
 int atualizarCabecalhoPadrao (Cabecalho *c ) {
-	c->status = 0;
+	c->status = '0';
     c->topo = -1;
     c->proxRRN = 0;
     c->nroRegRem = 0;
@@ -17,6 +17,14 @@ int atualizarCabecalhoPadrao (Cabecalho *c ) {
 // Atualiza o status do cabeçalho com o parametro 'status'
 int atualizarStatusCabecalho (Cabecalho *c, char status) {
     c->status = status;
+    return SUCESSO;
+}
+
+int testaStatusCabecalho (Cabecalho *c) {
+    if (c->status == '0') {
+        printf("Falha no processamento do arquivo.\n");
+        return ERRO;
+    }
     return SUCESSO;
 }
 
@@ -44,6 +52,11 @@ int lerCabecalhoArquivo (FILE *arq, Cabecalho *c) {
     fread(&c->nroRegRem, sizeof(int), 1, arq);
     fread(&c->nroPagDisco, sizeof(int), 1, arq);
     fread(&c->qttCompacta, sizeof(int), 1, arq);
+
+    if (testaStatusCabecalho(c) == ERRO) {
+        exit(ERRO);
+    }
+
     // passa por todo o lixo e vai diretamente para a posicao do primeiro registro
     fseek(arq, TAM_PG_DISCO, SEEK_SET);
 

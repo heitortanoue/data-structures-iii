@@ -48,10 +48,10 @@ typedef struct {
 } Registro;
 
 
-typedef struct {
-    Cabecalho cabecalho;
-    Registro* registros;
-} Arquivo;
+// typedef struct {
+//     Cabecalho cabecalho;
+//     Registro* registros;
+// } Arquivo;
 
 typedef struct{
     char **campo;
