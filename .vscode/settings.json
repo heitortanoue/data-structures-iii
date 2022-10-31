@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "stdlib.h": "c",
-        "csv.h": "c"
+        "csv.h": "c",
+        "removeinsere.h": "c"
     }
 }

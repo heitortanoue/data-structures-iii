@@ -4,8 +4,9 @@
 #include "../headers/removeinsere.h"
 
 /*
-    [TRABALHO1 - ESTRUTURA DE DADOS III - 2022/2]
-    ---------------------------------------------
+      ---------------------------------------------
+    [  TRABALHO1 - ESTRUTURA DE DADOS III - 2022/2  ]
+      ---------------------------------------------
     
     ->  Heitor Tanoue de Mello
         NUSP: 12547260
