@@ -1,10 +1,11 @@
 #ifndef __ARVORE_B_H__
 #define __ARVORE_B_H__
 
+#include <stdio.h>
 #define ORDEM 5
-#define TAM_PG_DISCO 73
-#define TAM_CABECALHO 73
-#define TAM_REGISTRO 73
+#define TAM_PG_DISCO_INDICE 73
+#define TAM_CABECALHO_INDICE 17
+#define TAM_NO 73
 
 typedef struct {
     char status;
@@ -12,10 +13,9 @@ typedef struct {
     int nroChavesTotal;
     int alturaArvore;
     int RRNproxNo;
-} Cabecalho;
+} CabecalhoIndice;
 
 typedef struct {
-    int descendente;
     int chave;
     int referencia;
 } Indice;
@@ -25,10 +25,19 @@ typedef struct {
     int nroChavesNo;
     int alturaNo;
     int RRNdoNo;
-    Indice* chaves;
+    Indice* dados;
+    int *descendentes;
 } No;
 
-typedef int ArvoreB;
+// typedef int ArvoreB;
 
+No* criaNo ();
+void escreveNo (No *no, FILE *arquivo);
+No* leNo (int RRN, FILE *arquivo);
+void escreveCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo);
+void leCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo);
+No* buscaChaveArvoreB (int chave, int RRN, FILE *arquivo);
+int insereChaveArvoreB (int chave, int* RRN, FILE *arquivo);
+void criaCabecalhoIndice (CabecalhoIndice* cabecalho);
 
 #endif
