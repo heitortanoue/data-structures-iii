@@ -8,5 +8,6 @@ int removeRegistro(void);
 int insert ();
 int compact();
 int createIndex ();
+int searchIndex ();
 
 #endif

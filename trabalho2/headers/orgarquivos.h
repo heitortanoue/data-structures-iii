@@ -7,6 +7,7 @@
 #include "registro.h"
 
 #define SUCESSO 0
+#define NAO_ENCONTRADO -2
 #define ERRO -1
 
 FILE* abreArquivo(char *nome_arquivo, char *type);

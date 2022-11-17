@@ -42,6 +42,9 @@ int main () {
         case 7:
             createIndex();
             break;
+        case 8:
+            searchIndex();
+            break;
         default:
             break;
     }

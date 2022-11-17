@@ -304,14 +304,13 @@ int compact(){
     return SUCESSO;
 }
 
+//FUNCIONALIDADE 7 - Cria um arquivo de indice primario para um arquivo binario
 int createIndex () {
     char nome_arquivo[128];
     scanf("%s", nome_arquivo);
 
     char nome_indice[128];
     scanf("%s", nome_indice);
-
-    printf("arquivo de dados: %s\n", nome_arquivo);
 
     FILE* bin = abreArquivo(nome_arquivo, "rb+");
     FILE* ind = abreArquivo(nome_indice, "wb+");
@@ -326,7 +325,7 @@ int createIndex () {
 
     Registro r;
     criaRegistro(&r);
-    int inseridos = 0;
+    Indice indice;
     for (int i = 0; i < qtdRegs; i++){
         lerRegistroArquivo(bin, &r);
 
@@ -334,9 +333,14 @@ int createIndex () {
             continue;
         }
 
+        indice.chave = r.idConecta;
+        indice.referencia = i;
+        //printf("i = %d\n", i);
+        
         //insere o registro no arquivo de indice
-        insereChaveArvoreB(r.idConecta, &inseridos, ind);
-        inseridos++;
+        if (insereChaveArvoreB(&indice, &ci, ind) == SUCESSO) {
+            (ci.nroChavesTotal)++;
+        }
     }
 
     //atualiza o cabecalho do arquivo de indice
@@ -347,6 +351,50 @@ int createIndex () {
     destroiRegistro(&r);
     fclose(bin);
     fclose(ind);
+
+    binarioNaTela(nome_indice);
+
+    return SUCESSO;
+}
+
+//FUNCIONALIDADE 8 - Busca um registro no arquivo de indice
+int searchIndex () {
+    char nome_indice[128];
+    scanf("%s", nome_indice);
+
+    char nome_arquivo[128];
+    scanf("%s", nome_arquivo);
+
+    int id;
+    scanf("%d", &id);
+
+    FILE* ind = abreArquivo(nome_indice, "rb+");
+    FILE* bin = abreArquivo(nome_arquivo, "rb+");
+
+    CabecalhoIndice ci;
+    leCabecalhoIndice(&ci, ind);
+
+    //busca o registro no arquivo de indice
+    int status, RRNPai = -1;
+    No* pos = buscaChaveArvoreB(id, ci.noRaiz, &RRNPai, ind, &status);
+
+    if (status == ERRO) {
+        printf("Registro inexistente.\n");
+        return ERRO;
+    }
+
+    int ref = referenciaChaveNo(pos, id);
+    int byteOffsetBin = calculaByteoffset(ref); 
+    Registro r;
+    criaRegistro(&r);
+
+    fseek(bin, byteOffsetBin, SEEK_SET);
+    lerRegistroArquivo(bin, &r);
+    imprimeRegistro(&r);
+
+    destroiRegistro(&r);
+    fclose(ind);
+    fclose(bin);
 
     return SUCESSO;
 }
