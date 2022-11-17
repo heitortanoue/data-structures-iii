@@ -40,7 +40,10 @@ void limpaIndice (Indice* indice);
 No* buscaChaveArvoreB (int chave, int RRN, int* RRNPai, FILE *arquivo, int* status);
 int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo);
 void criaCabecalhoIndice (CabecalhoIndice* cabecalho);
-int insereChaveNo (No* no, Indice* indice, FILE* arquivo);
+int insereChaveNo (No* no, Indice* indice, int desc);
 void dividirNo (No* no, No* no_esq, No* no_dir, CabecalhoIndice* ci, Indice* ind, FILE* arq);
+Indice* copiaIndice (Indice* origem);
+void destroiIndice (Indice* indice);
+void retiraNulosIndices (No* no);
 
 #endif
