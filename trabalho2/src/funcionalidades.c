@@ -375,8 +375,8 @@ int searchIndex () {
     leCabecalhoIndice(&ci, ind);
 
     //busca o registro no arquivo de indice
-    int status, RRNPai = -1;
-    No* pos = buscaChaveArvoreB(id, ci.noRaiz, &RRNPai, ind, &status);
+    int status, a = 0;
+    No* pos = buscaChaveArvoreB(id, ci.noRaiz, &a, &a, ind, &status);
 
     if (status == ERRO) {
         printf("Registro inexistente.\n");
