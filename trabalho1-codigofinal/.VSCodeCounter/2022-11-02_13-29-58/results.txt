@@ -1,0 +1,44 @@
+Date : 2022-11-02 13:29:58
+Directory : c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal
+Total : 16 files,  1029 codes, 117 comments, 259 blanks, all 1405 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| C        |          8 |        869 |        107 |        212 |      1,188 |
+| C++      |          7 |        134 |          9 |         36 |        179 |
+| Makefile |          1 |         26 |          1 |         11 |         38 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                         | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                            |         16 |      1,029 |        117 |        259 |      1,405 |
+| headers                                                                                                      |          7 |        134 |          9 |         36 |        179 |
+| src                                                                                                          |          8 |        869 |        107 |        212 |      1,188 |
++--------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                                                     | language | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\Makefile                  | Makefile |         26 |          1 |         11 |         38 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\headers\busca.h           | C++      |         10 |          0 |          3 |         13 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\headers\cabecalho.h       | C++      |         19 |          1 |          5 |         25 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\headers\csv.h             | C++      |         12 |          0 |          2 |         14 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\headers\funcionalidades.h | C++      |          9 |          0 |          2 |         11 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\headers\orgarquivos.h     | C++      |         24 |          0 |          6 |         30 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\headers\registro.h        | C++      |         51 |          7 |         16 |         74 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\headers\removeinsere.h    | C++      |          9 |          1 |          2 |         12 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\src\busca.c               | C        |         77 |          4 |          9 |         90 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\src\cabecalho.c           | C        |         47 |          7 |          9 |         63 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\src\csv.c                 | C        |         65 |          7 |         16 |         88 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\src\funcionalidades.c     | C        |        212 |         24 |         68 |        304 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\src\main.c                | C        |         30 |          4 |          2 |         36 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\src\orgarquivos.c         | C        |        185 |         38 |         51 |        274 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\src\registro.c            | C        |        144 |         14 |         32 |        190 |
+| c:\Users\Computador\Documents\Code\EDIII\data-structures-iii\trabalho1-codigofinal\src\removeinsere.c        | C        |        109 |          9 |         25 |        143 |
+| Total                                                                                                        |          |      1,029 |        117 |        259 |      1,405 |
++--------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+

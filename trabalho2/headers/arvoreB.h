@@ -46,5 +46,12 @@ int dividirNoComPai (No* pai, No* no_esq, No* novo_dir, CabecalhoIndice* ci, Ind
 Indice* copiaIndice (Indice* origem);
 void destroiIndice (Indice* indice);
 void retiraNulosIndices (No* no);
+void divideNoTeste(No *noAntigo, No *noNovo, CabecalhoIndice *cabecalho);
+No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave, CabecalhoIndice *cabecalho);
+int buscaProxNo(No* noBusca, Indice *chave);
+Indice* promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave);
+int organizaNo(No *no);
+void imprimeArvoreB(FILE* arquivo, CabecalhoIndice* c);
+void organizaDescendentes(No *no);
 
 #endif
