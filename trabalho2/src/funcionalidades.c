@@ -442,3 +442,106 @@ int searchIndex () {
 
     return SUCESSO;
 }
+
+//FUNCIONALIDADE 9 - Insere um registro colocando sua correspondencia no arquivo de indices
+int insertWithIndex () {
+    char nome_arquivo_bin[128];
+    scanf("%s", nome_arquivo_bin);
+
+    char nome_arquivo_indice[128];
+    scanf("%s", nome_arquivo_indice);
+
+    int qnt_insercoes;
+    scanf("%d", &qnt_insercoes);
+
+    FILE* bin = abreArquivo(nome_arquivo_bin, "rb+");
+    FILE* ind = abreArquivo(nome_arquivo_indice, "rb+");
+
+    Cabecalho c;
+    lerCabecalhoArquivo(bin, &c);
+    CabecalhoIndice ci;
+    leCabecalhoIndice(&ci, ind);
+
+    c.status = '0';
+    ci.status = '0';
+    escreveCabecalhoArquivo(&c, bin);
+    escreveCabecalhoIndice(&ci, ind);
+
+    Registro r;
+    criaRegistro(&r);
+    Indice indice;
+    criaIndice(&indice);
+
+    getchar();
+    for (int i = 0; i < qnt_insercoes; i++){
+        entradaDados(&r);
+        indice.referencia = insereRegistro(&r, &c, bin);
+
+        indice.chave = r.idConecta;
+        insereChaveArvoreB(&indice, &ci, ind);
+    }
+
+    fseek(bin, 0, SEEK_SET);
+    atualizarStatusCabecalho(&c, '1');
+    atualizarNumPagDiscoCabecalho(&c, c.proxRRN);
+    escreveCabecalhoArquivo(bin, &c);
+
+    fseek(ind, 0, SEEK_SET);
+    ci.status = '1';
+    // ATUALIZAR NUM PG DISCO INDICE
+    ci.nroChavesTotal++;
+    escreveCabecalhoIndice(ind, &ci);
+}
+
+// FUNCIONALIDADE 10 - Junta dois arquivos de dados pelos seus campos
+// topologiaRede1.idPoPsConectado= topologiaRede2.idConecta
+int joinOn () {
+    char nome_arq_dados_1[128];
+    scanf("%s", nome_arq_dados_1);
+
+    char nome_arq_dados_2[128];
+    scanf("%s", nome_arq_dados_2);
+
+    char nome_campo_arquivo_1[128];
+    scanf("%s", nome_campo_arquivo_1);
+
+    char nome_campo_arquivo_2[128];
+    scanf("%s", nome_campo_arquivo_2);
+
+    char nome_arq_indice[128];
+    scanf("%s", nome_arq_indice);
+
+    FILE* bin1 = abreArquivo(nome_arq_dados_1, "rb");
+    FILE* bin2 = abreArquivo(nome_arq_dados_2, "rb");
+    FILE* ind = abreArquivo(nome_arq_indice, "rb");
+
+    int qtdRegs1 = contarRegistros(bin1);
+
+    Cabecalho c1;
+    lerCabecalhoArquivo(bin1, &c1);
+    Cabecalho c2;
+    lerCabecalhoArquivo(bin2, &c2);
+    CabecalhoIndice ci;
+    leCabecalhoIndice(&ci, ind);
+
+    Registro r1, r2;
+    criaRegistro(&r1);
+    criaRegistro(&r2);
+
+    for (int i = 0; i < qtdRegs1; i++) {
+        lerRegistroArquivo(bin1, &r1);
+        int chave_valida = r1.idPoPsConectado;
+        int pgs_acessadas = 0;
+        int encontrou = 0;
+        No* no = buscaChaveArvoreB(chave_valida, ci.noRaiz, ind, &encontrou, &pgs_acessadas);      
+        if (encontrou == SUCESSO) {
+            int RRN_registro = buscaReferenciaNo(chave_valida, no);
+            fseek(bin2, calculaByteoffset(RRN_registro), SEEK_SET);
+            lerRegistroArquivo(bin2, &r2);
+            imprimeDoisRegistros(&r1, &r2);
+        }
+        destroiNo(no);
+    }
+
+    return SUCESSO;
+}

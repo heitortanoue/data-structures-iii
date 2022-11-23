@@ -68,6 +68,7 @@ int destroiRegistro (Registro *r);
 int lerDadosRegistroTeclado(Registro *t);
 int insereStringRegistro (char* str, char* str_registro, int tam_campo);
 void imprimeRegistro (Registro *r);
+void imprimeDoisRegistros (Registro *r1, Registro *r2);
 int registroRemovido (Registro *r);
 void readline(char* string);
 

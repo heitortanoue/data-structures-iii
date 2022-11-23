@@ -45,6 +45,9 @@ int main () {
         case 8:
             searchIndex();
             break;
+        case 10:
+            joinOn();
+            break;
         default:
             break;
     }

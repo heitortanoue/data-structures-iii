@@ -9,5 +9,6 @@ int insert ();
 int compact();
 int createIndex ();
 int searchIndex ();
+int joinOn ();
 
 #endif

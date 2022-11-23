@@ -105,11 +105,12 @@ int insereRegistro(Registro *reg, Cabecalho *c, FILE *arq){
         c->nroRegRem--;
 
     } else { //insere no final
-        fseek(arq, calculaByteoffset(c->proxRRN), SEEK_SET);
+        RRNInsercao = c->proxRRN;
+        fseek(arq, calculaByteoffset(RRNInsercao), SEEK_SET);
         inserirRegistroArquivo(arq, reg);
         c->proxRRN++;
     }
-    return SUCESSO;
+    return RRNInsercao;
 }
 
 // Le um campo do novo registro removendo as aspas

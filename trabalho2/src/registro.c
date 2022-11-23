@@ -127,6 +127,40 @@ void imprimeRegistro (Registro *r ) {
     printf("\n");
 }
 
+void imprimeDoisRegistros (Registro *r1, Registro *r2) {
+    if (intValido(r1->idConecta)) {
+        printf("Identificador do ponto: %d\n", r1->idConecta);
+    }
+    if (stringValida(r1->nomePoPs)) {
+        printf("Nome do ponto: %s\n", r1->nomePoPs);
+    }
+    if (stringValida(r1->nomePais)) {
+        printf("Pais de localizacao: %s\n", r1->nomePais);
+    }
+    if (stringValida(r1->siglaPais)) {
+        printf("Sigla do pais: %s\n", r1->siglaPais);
+    }
+    if (intValido(r1->idPoPsConectado)) {
+        printf("Identificador do ponto conectado: %d\n", r1->idPoPsConectado);
+    }
+
+    if (stringValida(r2->nomePoPs)) {
+        printf("Nome do ponto conectado: %s\n", r2->nomePoPs);
+    }
+    if (stringValida(r2->nomePais)) {
+        printf("Nome do pais conectado: %s\n", r2->nomePais);
+    }
+    if (stringValida(r2->siglaPais)) {
+        printf("Sigla do pais: %s\n", r2->siglaPais);
+    }
+
+    if (intValido(r1->velocidade) && charValido(r1->unidadeMedida)) {
+        printf("Velocidade de transmissao: %d %c%s\n", r1->velocidade, r1->unidadeMedida, "bps");
+    }
+
+    printf("\n");   
+}
+
 // Função auxiliar debugger para impressao do registro inteiro
 void imprimeRegistroRaw (FILE* arq) {
     for (int i = 0; i < TAM_REGISTRO; i++) {
