@@ -102,8 +102,9 @@ void leCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo) {
     fread(&cabecalho->RRNproxNo, sizeof(int), 1, arquivo);
 }
 
-No* buscaChaveArvoreB (int chave, int RRN, int* caminho, int* altura, FILE *arquivo, int* status) {
+No* buscaChaveArvoreB (int chave, int RRN, FILE *arquivo, int* status, int *pgs_acessadas) {
     No *no = leNo(RRN, arquivo);
+    (*pgs_acessadas)++;
 
     int i = 0;
     // Enquanto a chave buscada for maior que a chave do nó e não for a última chave do nó
@@ -128,9 +129,9 @@ No* buscaChaveArvoreB (int chave, int RRN, int* caminho, int* altura, FILE *arqu
         return no;
     }
 
-    caminho[*altura] = RRN;
-    printf("RRN: %d, *altura: %d, caminho[*altura]: %d\n", RRN, *altura, caminho[*altura]);
-    (*altura)++;
+    // caminho[*altura] = RRN;
+    // printf("RRN: %d, *altura: %d, caminho[*altura]: %d\n", RRN, *altura, caminho[*altura]);
+    // (*altura)++;
 
     // printf("i: %d, folha: %c, descendentes[i]: %d\n", i, no->folha, no->descendentes[i]);
     // printf("RRN: %d, RRNPai: %d, status: %d\n", RRN, *RRNPai, *status);
@@ -138,7 +139,7 @@ No* buscaChaveArvoreB (int chave, int RRN, int* caminho, int* altura, FILE *arqu
     int descendente = no->descendentes[i];
     destroiNo(no);
 
-    return buscaChaveArvoreB(chave, descendente, caminho, altura, arquivo, status);
+    return buscaChaveArvoreB(chave, descendente, arquivo, status, pgs_acessadas);
 }
 
 Indice* promoverChave (No* no, Indice* ind, No* no_esq, No* no_dir) {
@@ -369,6 +370,7 @@ void divideNoRecursivo (No* no, int* caminho, int altura, Indice* indice, Cabeca
 }
 
 int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo) {
+    // Não tem raiz
     if (ci->noRaiz == -1) {
         No *novo = criaNo();
         novo->folha = '1';
@@ -385,9 +387,8 @@ int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo) {
         return SUCESSO;
     }
 
-    int status_busca, altura = 0;
-    int *caminho = (int*) malloc(sizeof(int) * 64);
-    No* ind = buscaChaveArvoreB(indice->chave, ci->noRaiz, caminho, &altura, arquivo, &status_busca);
+    int status_busca;
+    No* ind = buscaChaveArvoreB(indice->chave, ci->noRaiz, arquivo, &status_busca, 0);
 
     // Se a chave já existe, retorna erro
     if (status_busca != NAO_ENCONTRADO) {
@@ -402,7 +403,7 @@ int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo) {
     }
 
     // Verifica se o nó não está cheio e é folha
-    if (ind->nroChavesNo < ORDEM - 1 && ind->folha == '1') {
+    if (!noCheio(ind) && ind->folha == '1') {
         insereChaveNo(ind, indice, -1);
         escreveNo(ind, arquivo);
 
@@ -417,135 +418,279 @@ int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo) {
         return SUCESSO;
     }
 
-    // Se o nó está cheio, divide o nó
-    No* novo_esq = criaNo();
-    No* novo_dir = criaNo();
-    printf("ALTURA: %d\n", altura);
-    if (altura >= 0 && caminho[altura] >= 0) {
-        // printf("[=-=] Nó cheio com pai, dividindo...\n");
-        No* pai = leNo(caminho[altura], arquivo);
-        // printf("Pai: \n");
-        // imprimeNo(pai);
-        if( dividirNoComPai(pai, ind, novo_dir, ci, indice, arquivo) == ERRO ) {
-            Indice* ind_promovido = promoverChave(pai, indice, ind, novo_dir);
-            insereChaveNo(pai, ind_promovido, novo_dir->RRNdoNo);
-            divideNoRecursivo(pai, caminho, altura - 1, ind_promovido, ci, arquivo);
-        
-            destroiIndice(ind_promovido);
-        }
-        // printf("Ind: \n");
-        // imprimeNo(ind);
-        // printf("Novo dir: \n");
-        // imprimeNo(novo_dir); 
-        destroiNo(pai);
-    } else {
-        dividirNo(ind, novo_esq, novo_dir, ci, indice, arquivo);
-    }
+    //No raiz cheio, cria nova raiz
+    No *novoNo = criaNo();
+    No *novoNoRaiz = criaNo();
     
+    if(ind->folha == '1' && ind->RRNdoNo == ci->noRaiz && noCheio(ind)){
+        novoNoRaiz->alturaNo = ind->alturaNo + 1;
+        novoNoRaiz->RRNdoNo = ci->RRNproxNo;
+        novoNoRaiz->folha = '0';
+        ci->RRNproxNo++;
 
-    printf("[3] Nó cheio, promovendo chave\n");
-    printf("Nó original:\n");
-    imprimeNo(ind);
-    printf("Nó esquerdo:\n");
-    imprimeNo(novo_esq);
-    printf("Nó direito:\n");
-    imprimeNo(novo_dir);
+        divideNoTeste(ind, novoNo, ci);
+        promoveIndice(ind, novoNo, novoNoRaiz, indice);
+
+        if(indice->chave > novoNo->dados[0].chave){
+            insereChaveNo(novoNo, indice, -1);
+        } else {
+            insereChaveNo(ind, indice, -1);
+        }
+
+        novoNoRaiz->descendentes[0] = ind->RRNdoNo;
+        ci->noRaiz = novoNoRaiz->RRNdoNo;
+
+        organizaNo(novoNo);
+        organizaNo(ind);
+
+        imprimeNo(novoNoRaiz);
+        imprimeNo(ind);
+        imprimeNo(novoNo);
+
+        escreveNo(novoNoRaiz, arquivo);
+        escreveNo(novoNo, arquivo);
+        escreveNo(ind, arquivo);
+        return SUCESSO;
+    }
+
+
+    // Se o nó está cheio, divide o nó
+        No *raiz = leNo(ci->noRaiz, arquivo);
+        No *filho;
+
+        printf("Chave de insercao: %d\n", indice->chave);
+        int RRNfilho = buscaProxNo(raiz, indice);
+        if (RRNfilho == -1){
+            filho = NULL;
+        } else {
+            filho = leNo(RRNfilho, arquivo);
+        }
+
+        if(filho != NULL){
+            insereDivisaoRecursivo(raiz, filho, arquivo, indice, ci);
+        }
+        
 
     destroiNo(ind);
-    destroiNo(novo_esq);
-    destroiNo(novo_dir);
 
     return SUCESSO;
 }
 
-int TESTEinsereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo) {
-    No* no = criaNo();
+void divideNoTeste(No *noAntigo, No *noNovo, CabecalhoIndice *cabecalho){
+    //Divide um nó em dois
+    noNovo->alturaNo = noAntigo->alturaNo;
+    noNovo->folha = noAntigo->folha;
+    noNovo->RRNdoNo = cabecalho->RRNproxNo;
+    cabecalho->RRNproxNo++;
 
-    // Arvore vaiza, criacao da riz
-    if (ci->noRaiz == -1) {
-        no->folha = '1';
-        no->alturaNo = 1;
-        no->RRNdoNo = ci->RRNproxNo;
-        insereChaveNo(no, indice, -1);
-        escreveNo(no, arquivo);
+    for (int i = (ORDEM - 1)/2, j = 0; i < ORDEM - 1; i++, j++){
+        if (noAntigo->dados[i].chave != -1) {
+            noNovo->dados[j] = noAntigo->dados[i];
+            noNovo->descendentes[j] = noAntigo->descendentes[i];
+            limpaIndice(&noAntigo->dados[i]);
+            noAntigo->descendentes[i] = -1;
 
-        printf("[1] Nova raiz criada\n");
-        imprimeNo(no);
-
-        destroiNo(no);
-        ci->noRaiz = ci->RRNproxNo;
-        return SUCESSO;
+            noNovo->nroChavesNo++;
+            noAntigo->nroChavesNo--;
+        }
     }
 
-    no = leNo(ci->noRaiz, arquivo);
-    // Raiz está cheia
-    if (noCheio(no)) {
-        No* novo = criaNo();
-        novo->descendentes[0] = ci->noRaiz;
-        TESTEdividirNo(novo, no);
+    // int counterAux = noAntigo->nroChavesNo;
+    // int i = 0;
+    // for (i = 0; i < (counterAux / 2); i++){
+    //     noNovo->dados[i] = noAntigo->dados[counterAux/2 + i];
+    //     noAntigo->dados[counterAux/2 + i].chave = - 1;
+    //     noAntigo->dados[counterAux/2 + i].referencia = - 1;
+
+    //     noNovo->descendentes[i] = noAntigo->descendentes[counterAux/2 + i];
+    //     noAntigo->descendentes[counterAux/2 + i] = - 1;
+    // }
+    // noNovo->descendentes[(counterAux + 1) / 2] = noAntigo->descendentes[counterAux];
+    // noAntigo->descendentes[counterAux] = - 1;
+
+    // noAntigo->nroChavesNo -= i;
+    // noNovo->nroChavesNo = i + 1;
+
+
+    //imprimeNo(noAntigo);
+    //imprimeNo(noNovo);
+}
+
+No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave, CabecalhoIndice *cabecalho){
+
+    No* novoNo = criaNo();
+    No* noDividido;
+    
+    Indice *chaveAux = copiaIndice(chave);
+    printf("Chave: %d\n", chaveAux->chave);
+
+    printf("No pai: ");
+    imprimeNo(noPai);
+
+    printf("No filho: \n");
+    if (noFilho != NULL) imprimeNo(noFilho);
+    
+    if(noFilho == NULL){ //chegou no no folha -> retorna
+        divideNoTeste(noPai, novoNo, cabecalho); //noPai é o nó folha
+        if(chaveAux->chave < novoNo->dados[0].chave){
+            insereChaveNo(noPai, chaveAux, -1);
+        } else {
+            insereChaveNo(novoNo, chaveAux, -1);
+        }
+        organizaNo(noPai);
+        organizaNo(novoNo);
+        //imprimeNo(noPai);
+        //imprimeNo(novoNo);
+        return novoNo;
+    }
+
+    int proxRRN = buscaProxNo(noFilho, chave);
+    printf("Prox: %d\n", proxRRN);
+    No *aux;
+    if (proxRRN >= 0){
+        aux = leNo(proxRRN, arquivo);
+        imprimeNo(aux);
+    } else {
+        aux = NULL;
+    }
+    //imprimeNo(aux);
+    //printf("No pai e filho:\n");
+    //imprimeNo(noPai);
+    //imprimeNo(noFilho);
+    noDividido = insereDivisaoRecursivo(noFilho, aux, arquivo, chave, cabecalho);
+
+    //printf("Prox: %d\n", chaveAux->chave);
+    /*if(noFilho == NULL){
+        return novoNo;
+    }*/
+    if (noCheio(noPai)){
+        divideNoTeste(noPai, novoNo, cabecalho);
+        chaveAux = promoveIndice(noFilho, noDividido, noPai, chaveAux);
+
+        organizaNo(noPai);
+        organizaNo(noFilho);
+        organizaNo(noDividido);
+
+        imprimeNo(noPai);
+        imprimeNo(noFilho);
+        imprimeNo(noDividido);
+
+        escreveNo(noDividido, arquivo);
+        escreveNo(noFilho, arquivo);
+        return novoNo;
+    } else if (noDividido == NULL){
+        return NULL;
+    }
+    else {
+        chaveAux = promoveIndice(noFilho, noDividido, noPai, chaveAux);
+
+        organizaNo(noPai);
+        organizaNo(noFilho);
+        organizaNo(noDividido);
+
+        imprimeNo(noPai);
+        imprimeNo(noFilho);
+        imprimeNo(noDividido);
+
+        escreveNo(noDividido, arquivo);
+        escreveNo(noFilho, arquivo);
+        escreveNo(noPai, arquivo);
+
+        return NULL;
+    }
+}
+
+int buscaProxNo(No* noBusca, Indice *chave){
+    if (noBusca->folha == '1') return -1;
+
+    int i = 0;
+    while(i < noBusca->nroChavesNo && chave->chave > noBusca->dados[i].chave){
+        i++;
+    }
+
+    // if(chave->chave < noBusca->dados[i].chave){
+    return noBusca -> descendentes[i];
+    // } else {
+    //     return noBusca -> descendentes[i + 1];
+    // }
+}
+
+Indice* promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave){
+    Indice *indicePromovido = malloc(sizeof(Indice));
+
+    /*printf("Chave: %d\n", chave->chave);
+    printf("No de promocao antes:\n");
+    imprimeNo(noPai);
+    imprimeNo(noFilhoDir);
+    imprimeNo(noFilhoEsq);*/
+    //imprimeNo(noPai);
+    
+    if(chave->chave < noFilhoDir->dados[0].chave){
         int i = 0;
-        if (novo->dados[0].chave < indice->chave) {
+        while(noFilhoEsq->dados[i].chave > 0){
+            indicePromovido = &noFilhoEsq->dados[i];
             i++;
         }
-        No* desc = leNo(novo->descendentes[i], arquivo);
-        TESTEinserirNoNaoCheio(desc, indice);
-        no = novo;
-
-        destroiNo(no);
-        destroiNo(novo);
-        destroiNo(desc);
-
-        return SUCESSO;
+        insereChaveNo(noPai, indicePromovido, noFilhoDir->RRNdoNo);
+        limpaIndice(&noFilhoEsq->dados[i - 1]);
+        noFilhoEsq->nroChavesNo--;
+        
+    } else {
+        indicePromovido = &noFilhoDir->dados[0];
+        insereChaveNo(noPai, indicePromovido, noFilhoDir->RRNdoNo);
+        limpaIndice(&noFilhoDir->dados[0]);
+        noFilhoDir->nroChavesNo--;
     }
-    
-    TESTEinserirNoNaoCheio(no, indice);
-    destroiNo(no);
-    return SUCESSO;
+    /*printf("No de promocao depois:\n");
+    imprimeNo(noPai);
+    imprimeNo(noFilhoDir);
+    imprimeNo(noFilhoEsq);*/
+    return indicePromovido;
 }
 
-int TESTEinserirNoNaoCheio(No* no, Indice* ind, FILE* arquivo) {
-    int i = no->nroChavesNo - 1;
-    if (no->folha = '1') {
-        while (i >= 0 && no->dados[i].chave > ind->chave) {
-            no->dados[i + 1] = no->dados[i];
-            i--;
-        }     
-
-        no->dados[i + 1] = *ind;
-        no->nroChavesNo++;
-        return SUCESSO;
-    }
-
-    // Nó nao é folha
-    while (i >= 0 && no->dados[i].chave > ind->chave) {
-        i--;
-    }
-
-    No* filho = leNo(no->descendentes[i + 1], arquivo);
-    if (noCheio(filho)) {
-        TESTEdividirNo(i+1, filho);
-        if (no->dados[i + 1].chave < ind->chave) {
-            i++;
+void organizaNo(No *no){
+    /*no->nroChavesNo = ORDEM - 1;
+    for (int i = 0; i < ORDEM -1; i++) {
+        if (no->dados[i].chave == -1) {
+            for (int j = i; j < ORDEM - 2; j++) {
+                no->dados[j] = no->dados[j + 1];
+            }
+            no->nroChavesNo--;
         }
+    }*/
+
+    Indice aux = no->dados[0];
+    int i = 0;
+    int j = 0;
+    int count = 0;
+    while(i < no->nroChavesNo){
+        if(aux.chave < 0){
+            while(aux.chave < 0 && j < ORDEM - 2){
+                j++;
+                aux = no->dados[j];
+            }
+            
+            no->dados[i] = aux;
+            //if(aux.chave > 0) count++;
+            no->dados[j].chave = -1;
+            no->dados[j].referencia = -1;
+            aux = no->dados[j];
+        }
+        if(no->dados[i].chave > 0) count++;
+        i++;
+        j = i;
     }
-    return TESTEinserirNoNaoCheio(filho, ind, arquivo);
+
+    no->nroChavesNo = count;
 }
 
-int TESTEdividirNo(int i, No* no, CabecalhoIndice* ci, FILE* arquivo) {
-    No* novo = criaNo();
-    novo->folha = no->folha;
-    novo->RRNdoNo = ci->RRNproxNo;
-    ci->RRNproxNo++;
-
-    for (int j = 0; j < (ORDEM-1)/2; j++) {
-        novo->dados[j] = no->dados[j + (ORDEM-1)/2];
+int buscaReferenciaNo (int chave, No* no) {
+    int i = 0;
+    while (i < no->nroChavesNo && chave > no->dados[i].chave) {
+        i++;
     }
-    if (no->folha == '0') {
-        for (int j = 0; j < ORDEM/2; j++) {
-            novo->descendentes[j] = no->descendentes[j + ORDEM/2];
-        }
+    if (chave == no->dados[i].chave) {
+        return no->dados[i].referencia;
     }
-    no->nroChavesNo = ((ORDEM-1)/2) - 1;
-    
-    for (int j = )
+    return -1;
 }

@@ -37,7 +37,7 @@ int referenciaChaveNo (No* no, int chave);
 void escreveCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo);
 void leCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo);
 void limpaIndice (Indice* indice);
-No* buscaChaveArvoreB (int chave, int RRN, int* caminho, int* altura, FILE *arquivo, int* status);
+No* buscaChaveArvoreB (int chave, int RRN, FILE *arquivo, int* status, int *pgs_acessadas);
 int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo);
 void criaCabecalhoIndice (CabecalhoIndice* cabecalho);
 int insereChaveNo (No* no, Indice* indice, int desc);
@@ -46,5 +46,12 @@ int dividirNoComPai (No* pai, No* no_esq, No* novo_dir, CabecalhoIndice* ci, Ind
 Indice* copiaIndice (Indice* origem);
 void destroiIndice (Indice* indice);
 void retiraNulosIndices (No* no);
+void divideNoTeste(No *noAntigo, No *noNovo, CabecalhoIndice *cabecalho);
+No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave, CabecalhoIndice *cabecalho);
+int buscaProxNo(No* noBusca, Indice *chave);
+Indice* promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave);
+void organizaNo(No *no);
+void destroiNo (No* no);
+int buscaReferenciaNo (int chave, No* no);
 
 #endif

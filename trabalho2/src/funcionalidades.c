@@ -359,41 +359,85 @@ int createIndex () {
 
 //FUNCIONALIDADE 8 - Busca um registro no arquivo de indice
 int searchIndex () {
-    char nome_indice[128];
-    scanf("%s", nome_indice);
+    char nome_arquivo_bin[128];
+    scanf("%s", nome_arquivo_bin);
+    char nome_arquivo_indice[128];
+    scanf("%s", nome_arquivo_indice);
 
-    char nome_arquivo[128];
-    scanf("%s", nome_arquivo);
+    int qtd_filtros;
+    scanf("%d", &qtd_filtros);
 
-    int id;
-    scanf("%d", &id);
+    Busca filtros;
+    criaFiltro(&filtros, qtd_filtros);
+    
+    //salva os filtros na ordem
+    for (int i = 0; i < qtd_filtros; i++){
+        scanf("%s", (filtros.campo)[i]);
+        getchar();
+        scanTeclado((filtros.criterios)[i]); //entrada do teclado removendo aspas
+        trataFiltros(&filtros, i); //identifica o campo
+    }
 
-    FILE* ind = abreArquivo(nome_indice, "rb+");
-    FILE* bin = abreArquivo(nome_arquivo, "rb+");
+    FILE* bin = abreArquivo(nome_arquivo_bin, "rb");
+    FILE* ind = abreArquivo(nome_arquivo_indice, "rb");
 
+    int qtdRegs = contarRegistros(bin);
+    Cabecalho c;
+    lerCabecalhoArquivo(bin, &c);
     CabecalhoIndice ci;
     leCabecalhoIndice(&ci, ind);
 
-    //busca o registro no arquivo de indice
-    int status, a = 0;
-    No* pos = buscaChaveArvoreB(id, ci.noRaiz, &a, &a, ind, &status);
-
-    if (status == ERRO) {
-        printf("Registro inexistente.\n");
-        return ERRO;
-    }
-
-    int ref = referenciaChaveNo(pos, id);
-    int byteOffsetBin = calculaByteoffset(ref); 
     Registro r;
     criaRegistro(&r);
 
-    fseek(bin, byteOffsetBin, SEEK_SET);
-    lerRegistroArquivo(bin, &r);
-    imprimeRegistro(&r);
+    int regsVisitados = 0;
 
+    for (int i = 0; i < qtd_filtros; i++){
+        regsVisitados = 1;
+        int encontrou = 0;
+        printf("Busca %d\n", i + 1);
+
+        // filtros.tipo_campo[i] == 0 => nomePoPs
+        if (filtros.tipo_campo[i] == 0) {
+            int chave_valida = validaInt(filtros.criterios[i]);
+            if (chave_valida == -1) {
+                printf("Registro inexistente.\n");
+                continue;
+            }
+            int pgs_acessadas = 0;
+            No* no = buscaChaveArvoreB(chave_valida, ci.noRaiz, ind, &encontrou, &pgs_acessadas);      
+            if (encontrou == SUCESSO) {
+                int RRN_registro = buscaReferenciaNo(chave_valida, no);
+                fseek(bin, calculaByteoffset(RRN_registro), SEEK_SET);
+                lerRegistroArquivo(bin, &r);
+                imprimeRegistro(&r);
+            }
+            filtros.pagDisco = pgs_acessadas + 3;
+
+            destroiNo(no);
+        } else {
+            for (int j = 0; j < qtdRegs; j++) {
+                lerRegistroArquivo(bin, &r);
+                if(testaRegistro(r, &filtros, i)){ //se tiver o campo de busca imprime
+                    encontrou = SUCESSO;
+                    imprimeRegistro(&r);
+                }
+                regsVisitados++;
+            }
+            //calcula a quantidade de pag. de discos acessadas
+            filtros.pagDisco = calculaNumPagDisco(regsVisitados);
+        }
+        fseek(bin, TAM_PG_DISCO, SEEK_SET);
+
+        if(encontrou == SUCESSO) { 
+            printf("Numero de paginas de disco: %ld\n\n", filtros.pagDisco);
+        } else {
+            printf("Registro inexistente.\n\nNumero de paginas de disco: %ld\n\n", filtros.pagDisco);
+        }
+    }
+
+    destroiFiltro(&filtros);
     destroiRegistro(&r);
-    fclose(ind);
     fclose(bin);
 
     return SUCESSO;
