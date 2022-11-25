@@ -338,7 +338,7 @@ int createIndex () {
         //printf("i = %d\n", i);
         
         //insere o registro no arquivo de indice
-        printf("i: %d\n", i);
+       //printf("i: %d\n", i);
         if (insereChaveArvoreB(&indice, &ci, ind) == SUCESSO) {
             (ci.nroChavesTotal)++;
         }
@@ -347,6 +347,8 @@ int createIndex () {
 
     //atualiza o cabecalho do arquivo de indice
     ci.status = '1';
+    No* raiz = leNo(ci.noRaiz, ind);
+    ci.alturaArvore = raiz->alturaNo;
     // ...
     escreveCabecalhoIndice(&ci, ind);
 

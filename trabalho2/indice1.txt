@@ -1,4 +1,4 @@
-status: 1, RRNproxNo: 61, alturaArvore: 0, noRaiz: 24, nroChavesTotal: 160
+status: 1, RRNproxNo: 61, alturaArvore: 4, noRaiz: 24, nroChavesTotal: 160
 folha: 1, nroChavesNo: 2, alturaNo: 1, RRNdoNo: 0, descendentes: -1 -1 -1 -1 -1 , dados: 1 (6) 2 (136) -1 (-1) -1 (-1) 
 folha: 1, nroChavesNo: 4, alturaNo: 1, RRNdoNo: 1, descendentes: -1 -1 -1 -1 -1 , dados: 111 (44) 112 (56) 113 (134) 114 (39) 
 folha: 0, nroChavesNo: 4, alturaNo: 2, RRNdoNo: 2, descendentes: 0 48 6 27 39 , dados: 3 (18) 6 (3) 11 (62) 14 (67) 
