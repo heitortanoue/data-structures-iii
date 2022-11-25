@@ -128,13 +128,6 @@ No* buscaChaveArvoreB (int chave, int RRN, FILE *arquivo, int* status, int *pgs_
         *status = ERRO;
         return no;
     }
-
-    // caminho[*altura] = RRN;
-    // printf("RRN: %d, *altura: %d, caminho[*altura]: %d\n", RRN, *altura, caminho[*altura]);
-    // (*altura)++;
-
-    // printf("i: %d, folha: %c, descendentes[i]: %d\n", i, no->folha, no->descendentes[i]);
-    // printf("RRN: %d, RRNPai: %d, status: %d\n", RRN, *RRNPai, *status);
     
     int descendente = no->descendentes[i];
     destroiNo(no);
@@ -339,34 +332,6 @@ int insereChaveNo (No* no, Indice* indice, int desc) {
     no->nroChavesNo++;
 
     return i;
-}
-
-void divideNoRecursivo (No* no, int* caminho, int altura, Indice* indice, CabecalhoIndice* ci, FILE* arquivo) {
-    No* novo_esq = criaNo();
-    No* novo_dir = criaNo();
-    int RRN_busca_pai = caminho[altura];
-    printf("RRN_busca_pai: %d\n", RRN_busca_pai);
-    if (RRN_busca_pai >= 0) {
-        // printf("[=-=] Nó cheio com pai, dividindo...\n");
-        No* pai = leNo(RRN_busca_pai, arquivo);
-        // printf("Pai: \n");
-        // imprimeNo(pai);
-        if( dividirNoComPai(pai, no, novo_dir, ci, indice, arquivo) == ERRO ) {
-            Indice* ind_promovido = promoverChave(pai, indice, no, novo_dir);
-            insereChaveNo(pai, ind_promovido, novo_dir->RRNdoNo);
-            divideNoRecursivo(pai, caminho, altura - 1, ind_promovido, ci, arquivo);
-        
-            destroiIndice(ind_promovido);
-        }
-        // printf("Ind: \n");
-        // imprimeNo(ind);
-        // printf("Novo dir: \n");
-        // imprimeNo(novo_dir); 
-        destroiNo(pai);
-    } else {
-        dividirNo(no, novo_esq, novo_dir, ci, indice, arquivo);
-    }
-
 }
 
 int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo) {
