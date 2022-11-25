@@ -493,8 +493,7 @@ int insertWithIndex () {
 
     fseek(ind, 0, SEEK_SET);
     ci.status = '1';
-    // ATUALIZAR NUM PG DISCO INDICE
-    ci.nroChavesTotal++;
+    ci.nroChavesTotal += qnt_insercoes;
     escreveCabecalhoIndice(&ci, ind);
 
     destroiRegistro(&r);
