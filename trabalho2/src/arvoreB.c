@@ -40,18 +40,20 @@ int calculaByteOffsetArvoreB (int RRN) {
 }
 
 void escreveNo (No *no, FILE *arquivo) {
-    fseek(arquivo, calculaByteOffsetArvoreB(no->RRNdoNo), SEEK_SET);
-    fwrite(&no->folha, sizeof(char), 1, arquivo);
-    fwrite(&no->nroChavesNo, sizeof(int), 1, arquivo);
-    fwrite(&no->alturaNo, sizeof(int), 1, arquivo);
-    fwrite(&no->RRNdoNo, sizeof(int), 1, arquivo);
+    if(no != NULL && no->RRNdoNo >= 0 && (no->folha == '1' || no->folha == '0')){
+        fseek(arquivo, calculaByteOffsetArvoreB(no->RRNdoNo), SEEK_SET);
+        fwrite(&no->folha, sizeof(char), 1, arquivo);
+        fwrite(&no->nroChavesNo, sizeof(int), 1, arquivo);
+        fwrite(&no->alturaNo, sizeof(int), 1, arquivo);
+        fwrite(&no->RRNdoNo, sizeof(int), 1, arquivo);
 
-    for (int i = 0; i < ORDEM - 1; i++) {
-        fwrite(&no->descendentes[i], sizeof(int), 1, arquivo);
-        fwrite(&no->dados[i].chave, sizeof(int), 1, arquivo);
-        fwrite(&no->dados[i].referencia, sizeof(int), 1, arquivo);
+        for (int i = 0; i < ORDEM - 1; i++) {
+            fwrite(&no->descendentes[i], sizeof(int), 1, arquivo);
+            fwrite(&no->dados[i].chave, sizeof(int), 1, arquivo);
+            fwrite(&no->dados[i].referencia, sizeof(int), 1, arquivo);
+        }
+        fwrite(&no->descendentes[ORDEM - 1], sizeof(int), 1, arquivo);
     }
-    fwrite(&no->descendentes[ORDEM - 1], sizeof(int), 1, arquivo);
 }
 
 No* leNo (int RRN, FILE *arquivo) {
@@ -69,7 +71,6 @@ No* leNo (int RRN, FILE *arquivo) {
         fread(&novo->dados[i].referencia, sizeof(int), 1, arquivo);
     }
     fread(&novo->descendentes[ORDEM - 1], sizeof(int), 1, arquivo);
-    // imprimeNo(novo);
 
     return novo;
 }
@@ -134,7 +135,6 @@ No* buscaChaveArvoreB (int chave, int RRN, FILE *arquivo, int* status, int *pgs_
 
     return buscaChaveArvoreB(chave, descendente, arquivo, status, pgs_acessadas);
 }
-
 
 int noCheio (No* no) {
     return no->nroChavesNo == ORDEM - 1;
@@ -278,23 +278,13 @@ int organizaNo(No *no){
 }
 
 Indice* promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave){
-
     if(noFilhoEsq == NULL || noFilhoDir == NULL){
         return chave;
     }
 
     Indice *indicePromovido = malloc(sizeof(Indice));
 
-    /*printf("Chave: %d\n", chave->chave);
-    printf("No de promocao antes:\n");
-    imprimeNo(noPai);
-    imprimeNo(noFilhoDir);
-    imprimeNo(noFilhoEsq);*/
-    //imprimeNo(noPai);
-    
     if(chave->chave < noFilhoDir->dados[0].chave){
-
-
         int i = 0;
         while(noFilhoEsq->dados[i].chave > 0){
             indicePromovido = &noFilhoEsq->dados[i];
@@ -307,23 +297,9 @@ Indice* promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave){
 
         noFilhoDir->descendentes[0] = noFilhoEsq->descendentes[i];
         noFilhoEsq->descendentes[i] = -1;
-
-        /*if(indicePromovido->chave == noPai->dados[i-1].chave){
-            noFilhoEsq->descendentes[i - 1] = noFilhoDir->descendentes[0];
-            noFilhoDir->descendentes[0] = noFilhoEsq->descendentes[i];
-            noFilhoEsq->descendentes[i] = -1;
-        }*/
-        //noFilhoEsq->nroChavesNo--;
         
     } else {
-       /* int i = 0;
-        while(noFilhoEsq->dados[i].chave > 0){
-            i++;
-        }
-        noFilhoEsq->descendentes[i] = noFilhoDir->descendentes[0];
-        noFilhoDir->descendentes[0] = -1;
-        //organizaDescendentes(noFilhoDir);*/
-        int k = 1;
+        int k;
         for(k = 1; k < ORDEM; k++){
             noFilhoDir->descendentes[k - 1] = noFilhoDir->descendentes[k];
         }
@@ -334,22 +310,8 @@ Indice* promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave){
         insereChaveNo(noPai, indicePromovido, noFilhoDir->RRNdoNo);
         limpaIndice(&noFilhoDir->dados[0]);
         organizaNo(noFilhoDir);
-        
-        /*int i = 0;
-        //Indice aux = noPai->dados[0];
-        while(noPai->dados[i].chave != indicePromovido->chave && i < ORDEM - 1){
-            i++;
-            //aux = noPai->dados[i];
-        }
-
-        noPai->descendentes[i] = noFilhoEsq->RRNdoNo;*/
-
-        //noFilhoDir->nroChavesNo--;
     }
-    /*printf("No de promocao depois:\n");
-    imprimeNo(noPai);
-    imprimeNo(noFilhoDir);
-    imprimeNo(noFilhoEsq);*/
+
     return indicePromovido;
 }
 
@@ -360,6 +322,7 @@ int buscaProxNo(No* noBusca, Indice *chave){
     while(i < noBusca->nroChavesNo && chave->chave > noBusca->dados[i].chave){
         i++;
     }
+
     return noBusca -> descendentes[i];
 }
 
@@ -381,6 +344,7 @@ No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave,
     }
 
     int proxRRN = buscaProxNo(noFilho, chave);
+
     No *aux;
     if (proxRRN >= 0){
         aux = leNo(proxRRN, arquivo);
@@ -467,6 +431,7 @@ void divideNo(No *noAntigo, No *noNovo, CabecalhoIndice *cabecalho){//Divide um 
     noNovo->folha = noAntigo->folha;
     noNovo->RRNdoNo = cabecalho->RRNproxNo;
     cabecalho->RRNproxNo++;
+
 
     int counterAux = noAntigo->nroChavesNo;
     int i = 0;

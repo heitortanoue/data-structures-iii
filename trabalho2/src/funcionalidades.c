@@ -338,13 +338,17 @@ int createIndex () {
         //printf("i = %d\n", i);
         
         //insere o registro no arquivo de indice
+       //printf("i: %d\n", i);
         if (insereChaveArvoreB(&indice, &ci, ind) == SUCESSO) {
             (ci.nroChavesTotal)++;
         }
+
     }
 
     //atualiza o cabecalho do arquivo de indice
     ci.status = '1';
+    No* raiz = leNo(ci.noRaiz, ind);
+    ci.alturaArvore = raiz->alturaNo;
     // ...
     escreveCabecalhoIndice(&ci, ind);
 
@@ -464,6 +468,8 @@ int insertWithIndex () {
 
     c.status = '0';
     ci.status = '0';
+    fseek(bin, 0, SEEK_SET);
+    fseek(ind, 0, SEEK_SET);
     escreveCabecalhoArquivo(bin, &c);
     escreveCabecalhoIndice(&ci, ind);
 
@@ -490,6 +496,13 @@ int insertWithIndex () {
     // ATUALIZAR NUM PG DISCO INDICE
     ci.nroChavesTotal++;
     escreveCabecalhoIndice(&ci, ind);
+
+    destroiRegistro(&r);
+    fclose(bin);
+    fclose(ind);
+
+    binarioNaTela(nome_arquivo_bin);
+    binarioNaTela(nome_arquivo_indice);
 
     return SUCESSO;
 }
