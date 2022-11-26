@@ -1,5 +1,6 @@
 #include "../headers/cabecalho.h"
 #include "../headers/orgarquivos.h"
+#include "../headers/arvoreB.h"
 #include <math.h>
 
 // Atualiza o cabeçalho com as informações default
@@ -73,4 +74,36 @@ void imprimeCabecalho (Cabecalho *c) {
     printf("nroPagDisco: %d\n", c->nroPagDisco);
     printf("qttCompacta: %d\n", c->qttCompacta);
     printf("=========================\n\n");
+}
+
+
+// Cria um cabecalho de indice com dados padroes
+void criaCabecalhoIndice (CabecalhoIndice* cabecalho) {
+    cabecalho->status = '0';
+    cabecalho->noRaiz = -1;
+    cabecalho->RRNproxNo = 0;
+    cabecalho->alturaArvore = 0;
+    cabecalho->nroChavesTotal = 0;
+}
+
+// Escreve o conteudo de um cabecalho de indice no arquivo de indice
+void escreveCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo) {
+    fseek(arquivo, 0, SEEK_SET);
+    fwrite(&cabecalho->status, sizeof(char), 1, arquivo);
+    fwrite(&cabecalho->noRaiz, sizeof(int), 1, arquivo);
+    fwrite(&cabecalho->nroChavesTotal, sizeof(int), 1, arquivo);
+    fwrite(&cabecalho->alturaArvore, sizeof(int), 1, arquivo);
+    fwrite(&cabecalho->RRNproxNo, sizeof(int), 1, arquivo);
+
+    escreverLixo(arquivo, TAM_PG_DISCO_INDICE - TAM_CABECALHO_INDICE);
+}
+
+// Le o conteudo do arquivo de indice e coloca em um cabecalho de indice
+void leCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo) {
+    fseek(arquivo, 0, SEEK_SET);
+    fread(&cabecalho->status, sizeof(char), 1, arquivo);
+    fread(&cabecalho->noRaiz, sizeof(int), 1, arquivo);
+    fread(&cabecalho->nroChavesTotal, sizeof(int), 1, arquivo);
+    fread(&cabecalho->alturaArvore, sizeof(int), 1, arquivo);
+    fread(&cabecalho->RRNproxNo, sizeof(int), 1, arquivo);
 }
