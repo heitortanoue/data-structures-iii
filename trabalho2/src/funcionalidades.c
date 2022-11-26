@@ -312,7 +312,7 @@ int createIndex () {
     char nome_indice[128];
     scanf("%s", nome_indice);
 
-    FILE* bin = abreArquivo(nome_arquivo, "rb+");
+    FILE* bin = abreArquivo(nome_arquivo, "rb");
     FILE* ind = abreArquivo(nome_indice, "wb+");
 
     int qtdRegs = contarRegistros(bin);
@@ -322,6 +322,7 @@ int createIndex () {
     //cria o cabecalho do arquivo de indice
     CabecalhoIndice ci;
     criaCabecalhoIndice(&ci);
+    escreveCabecalhoIndice(&ci, ind);
 
     Registro r;
     criaRegistro(&r);
@@ -335,10 +336,8 @@ int createIndex () {
 
         indice.chave = r.idConecta;
         indice.referencia = i;
-        //printf("i = %d\n", i);
         
         //insere o registro no arquivo de indice
-       //printf("i: %d\n", i);
         if (insereChaveArvoreB(&indice, &ci, ind) == SUCESSO) {
             (ci.nroChavesTotal)++;
         }
@@ -349,7 +348,6 @@ int createIndex () {
     ci.status = '1';
     No* raiz = leNo(ci.noRaiz, ind);
     ci.alturaArvore = raiz->alturaNo;
-    // ...
     escreveCabecalhoIndice(&ci, ind);
 
     destroiRegistro(&r);
@@ -555,6 +553,12 @@ int joinOn () {
         }
         destroiNo(no);
     }
+
+    fclose(bin1);
+    fclose(bin2);
+    fclose(ind);
+    destroiRegistro(&r1);
+    destroiRegistro(&r2);
 
     return SUCESSO;
 }

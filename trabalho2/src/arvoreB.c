@@ -353,7 +353,12 @@ No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave,
     }
 
     noDividido = insereDivisaoRecursivo(noFilho, aux, arquivo, chave, cabecalho);
-    if (noDividido == NULL) return NULL;
+
+    if (noDividido == NULL) {
+        destroiNo(novoNo);
+        destroiNo(aux);
+        return NULL;
+    }
 
     if (noCheio(noPai)){
         if(noPai->RRNdoNo == cabecalho->noRaiz){
@@ -390,6 +395,13 @@ No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave,
             escreveNo(noPai, arquivo);
             escreveNo(noFilho, arquivo);
             escreveNo(noDividido, arquivo);
+
+            destroiNo(novoNoRaiz);
+            destroiNo(novoNo);
+            // destroiNo(noPai);
+            // destroiNo(noFilho);
+            destroiNo(noDividido);
+
             return NULL;
         }
 
@@ -409,6 +421,8 @@ No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave,
         escreveNo(noDividido, arquivo);
         escreveNo(noFilho, arquivo);
 
+        destroiNo(noDividido);
+
         return novoNo;
     } else {
         chave = promoveIndice(noFilho, noDividido, noPai, chave);
@@ -420,6 +434,10 @@ No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave,
         escreveNo(noDividido, arquivo);
         escreveNo(noFilho, arquivo);
         escreveNo(noPai, arquivo);
+
+        destroiNo(noDividido);
+        destroiNo(novoNo);
+
         return NULL;
     }
 }
@@ -488,11 +506,11 @@ int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo) {
         return SUCESSO;
     }
 
-    //No raiz cheio, cria nova raiz
-    No *novoNo = criaNo();
-    No *novoNoRaiz = criaNo();
-    
+    //No raiz cheio, cria nova raiz    
     if(ind->folha == '1' && ind->RRNdoNo == ci->noRaiz && noCheio(ind)){
+        No *novoNo = criaNo();
+        No *novoNoRaiz = criaNo();
+
         divideNo(ind, novoNo, ci);
         novoNoRaiz->alturaNo = ind->alturaNo + 1;
         novoNoRaiz->RRNdoNo = ci->RRNproxNo;
@@ -505,8 +523,7 @@ int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo) {
             insereChaveNo(ind, indice, -1);
         }
 
-        promoveIndice(ind, novoNo, novoNoRaiz, indice);
-
+        Indice* novoIndice = promoveIndice(ind, novoNo, novoNoRaiz, indice);
 
         novoNoRaiz->descendentes[0] = ind->RRNdoNo;
         ci->noRaiz = novoNoRaiz->RRNdoNo;
@@ -518,26 +535,33 @@ int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo) {
         escreveNo(novoNo, arquivo);
         escreveNo(ind, arquivo);
 
+        // destroiNo(novoNo);
+        destroiNo(novoNoRaiz);
+        destroiNo(ind);
+        destroiIndice(novoIndice);
+
         return SUCESSO;
     }
 
 
     // Se o nó está cheio, divide o nó
-        No *raiz = leNo(ci->noRaiz, arquivo);
-        No *filho;
+    No *raiz = leNo(ci->noRaiz, arquivo);
+    No *filho;
 
-        int RRNfilho = buscaProxNo(raiz, indice);
-        if (RRNfilho == -1){
-            filho = NULL;
-        } else {
-            filho = leNo(RRNfilho, arquivo);
-        }
+    int RRNfilho = buscaProxNo(raiz, indice);
+    if (RRNfilho == -1){
+        filho = NULL;
+    } else {
+        filho = leNo(RRNfilho, arquivo);
+    }
 
-        if(filho != NULL){
-            insereDivisaoRecursivo(raiz, filho, arquivo, indice, ci);
-        }
+    if(filho != NULL){
+        insereDivisaoRecursivo(raiz, filho, arquivo, indice, ci);
+    }
 
     destroiNo(ind);
+    destroiNo(raiz);
+    destroiNo(filho);
 
     return SUCESSO;
 }
