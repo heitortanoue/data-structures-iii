@@ -16,6 +16,14 @@ typedef struct {
     int qttCompacta;
 } Cabecalho;
 
+typedef struct {
+    char status;
+    int noRaiz;
+    int nroChavesTotal;
+    int alturaArvore;
+    int RRNproxNo;
+} CabecalhoIndice;
+
 int atualizarCabecalhoPadrao (Cabecalho *c);
 int atualizarStatusCabecalho (Cabecalho *c, char status);
 int atualizarNumPagDiscoCabecalho (Cabecalho *c, int numRegistros);
@@ -23,5 +31,9 @@ int lerCabecalhoArquivo (FILE *arq, Cabecalho *c);
 int testaStatusCabecalho (Cabecalho *c);
 void imprimeCabecalho (Cabecalho *c);
 int calculaNumPagDisco ( int numRegistros );
+
+void criaCabecalhoIndice (CabecalhoIndice* cabecalho);
+void escreveCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo);
+void leCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo);
 
 #endif

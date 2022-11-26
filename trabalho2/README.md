@@ -1,11 +1,11 @@
 
 # Arquivos binários
-> *Trabalho 1 de Estrutura de Dados III (SCC0607) - 2022/2*
+> *Trabalho 2 de Estrutura de Dados III (SCC0607) - 2022/2*
 
 
 ![C](https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white)
 
-Este trabalho tem como objetivo armazenar dados em um arquivo binário, bem como desenvolver funcionalidades para a manipulação desses dados.
+Este trabalho tem como objetivo armazenar chaves primárias em uma árvore-B, bem como desenvolver funcionalidades para a manipulação desses dados.
 
 
 ## Estrutura
@@ -220,7 +220,7 @@ Clone o projeto
 Entre no diretório do projeto
 
 ```bash
-  cd ./trabalho1
+  cd ./trabalho2
 ```
 
 Compile o código
