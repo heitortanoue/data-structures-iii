@@ -7,7 +7,9 @@
 #include "../headers/csv.h"
 #include "../headers/busca.h"
 #include "../headers/removeinsere.h"
+#include "../headers/cabecalho.h"
 
+// Aloca um novo nó com campos padroes
 No* criaNo () {
     No *novo = (No*) malloc(sizeof(No));
     novo->dados = (Indice*) malloc(sizeof(Indice) * (ORDEM - 1));
@@ -29,16 +31,19 @@ No* criaNo () {
     return novo;
 }
 
+// Desaloca um nó
 void destroiNo (No* no) {
     free(no->dados);
     free(no->descendentes);
     free(no);
 }
 
+// Calcula o byte offset baseado no RRN
 int calculaByteOffsetArvoreB (int RRN) {
     return (TAM_PG_DISCO_INDICE + (RRN * TAM_NO));
 }
 
+// Escreve o conteudo de um nó no arquivo de indice, caso ele seja válido
 void escreveNo (No *no, FILE *arquivo) {
     if(no != NULL && no->RRNdoNo >= 0 && (no->folha == '1' || no->folha == '0')){
         fseek(arquivo, calculaByteOffsetArvoreB(no->RRNdoNo), SEEK_SET);
@@ -56,6 +61,7 @@ void escreveNo (No *no, FILE *arquivo) {
     }
 }
 
+// Le o conteudo do arquivo de indice com base em um RRN e coloca em um nó
 No* leNo (int RRN, FILE *arquivo) {
     No *novo = criaNo();
 
@@ -75,6 +81,7 @@ No* leNo (int RRN, FILE *arquivo) {
     return novo;
 }
 
+// Cria um cabecalho de indice com dados padroes
 void criaCabecalhoIndice (CabecalhoIndice* cabecalho) {
     cabecalho->status = '0';
     cabecalho->noRaiz = -1;
@@ -83,6 +90,7 @@ void criaCabecalhoIndice (CabecalhoIndice* cabecalho) {
     cabecalho->nroChavesTotal = 0;
 }
 
+// Escreve o conteudo de um cabecalho de indice no arquivo de indice
 void escreveCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo) {
     fseek(arquivo, 0, SEEK_SET);
     fwrite(&cabecalho->status, sizeof(char), 1, arquivo);
@@ -94,6 +102,7 @@ void escreveCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo) {
     escreverLixo(arquivo, TAM_PG_DISCO_INDICE - TAM_CABECALHO_INDICE);
 }
 
+// Le o conteudo do arquivo de indice e coloca em um cabecalho de indice
 void leCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo) {
     fseek(arquivo, 0, SEEK_SET);
     fread(&cabecalho->status, sizeof(char), 1, arquivo);
@@ -103,6 +112,7 @@ void leCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo) {
     fread(&cabecalho->RRNproxNo, sizeof(int), 1, arquivo);
 }
 
+// Busca uma chave em uma arvore B. RRN deve ser o RRN do no raiz, se status == SUCESSO, a chave foi encontrada.
 No* buscaChaveArvoreB (int chave, int RRN, FILE *arquivo, int* status, int *pgs_acessadas) {
     No *no = leNo(RRN, arquivo);
     (*pgs_acessadas)++;
@@ -125,6 +135,7 @@ No* buscaChaveArvoreB (int chave, int RRN, FILE *arquivo, int* status, int *pgs_
         return no;
     }
 
+    // descendente invalido
     if (no->descendentes[i] < 0) {
         *status = ERRO;
         return no;
@@ -136,10 +147,12 @@ No* buscaChaveArvoreB (int chave, int RRN, FILE *arquivo, int* status, int *pgs_
     return buscaChaveArvoreB(chave, descendente, arquivo, status, pgs_acessadas);
 }
 
+// Retorna se nó está cheio
 int noCheio (No* no) {
     return no->nroChavesNo == ORDEM - 1;
 }
 
+// Imprime o conteúdo de um nó
 void imprimeNo (No* n) {
     printf("folha: %c, nroChavesNo: %d, alturaNo: %d, RRNdoNo: %d, descendentes: ", n->folha, n->nroChavesNo, n->alturaNo, n->RRNdoNo);
     for (int i = 0; i < ORDEM; i++) {
@@ -152,12 +165,16 @@ void imprimeNo (No* n) {
     printf("\n");
 }
 
+// Busca uma chave dentro de um nó, retorna o index da chave no nó
 int buscaChaveNo (No* no, int chave) {
     int i = 0;
+
+    // incrementa i até a ultima chave do nó menor que a chave passada
     while (i < no->nroChavesNo && chave > no->dados[i].chave) {
         i++;
     }
 
+    // caso encontrou a chave, retorna o index (i)
     if (i < no->nroChavesNo && chave == no->dados[i].chave) {
         return i;
     }
@@ -165,10 +182,12 @@ int buscaChaveNo (No* no, int chave) {
     return -1;
 }
 
+// Busca a referencia ao arquivo de dados de uma chave dentro de um nó
 int referenciaChaveNo (No* no, int chave) {
     return no->dados[buscaChaveNo(no, chave)].referencia;
 }
 
+// Aloca memoria para um indice
 Indice* criaIndice (int chave, int referencia) {
     Indice *novo = (Indice*) malloc(sizeof(Indice));
     novo->chave = chave;
@@ -177,26 +196,32 @@ Indice* criaIndice (int chave, int referencia) {
     return novo;
 }
 
+// Desaloca memoria de um indice
 void destroiIndice (Indice* indice) {
     free(indice);
 }
 
+// Coloca os valores de chave e referencia do indice como -1
 void limpaIndice (Indice* indice) {
     indice->chave = -1;
     indice->referencia = -1;
 }
 
-Indice* copiaIndice (Indice* origem) {
-    Indice *novo = criaIndice(origem->chave, origem->referencia);
-    return novo;
+// Copia o conteúdo de um Indice para um novo Indice
+void copiaIndice (Indice* origem, Indice* destino) {
+    destino->chave = origem->chave;
+    destino->referencia = origem->referencia;
 }
 
+// Coloca um Indice em um nó
 int insereChaveNo (No* no, Indice* indice, int desc) {
     int i = 0;
+    // Encontra o lugar onde a chave deve ser inserida
     while (i < no->nroChavesNo && indice->chave > no->dados[i].chave) {
         i++;
     }
 
+    // Caso a chave já esteja lá, retorna ERRO
     if (i < no->nroChavesNo && indice->chave == no->dados[i].chave) {
         return ERRO;
     }
@@ -207,9 +232,9 @@ int insereChaveNo (No* no, Indice* indice, int desc) {
         no->descendentes[j + 1] = no->descendentes[j];
     }
 
-
     no->dados[i].chave = indice->chave;
     no->dados[i].referencia = indice->referencia;
+    // Caso o descendente passado como parametro seja valido, insere ele no nó
     if (desc >= 0) {
         no->descendentes[i + 1] = desc;
     }
@@ -277,22 +302,22 @@ int organizaNo(No *no){
     return SUCESSO;
 }
 
-Indice* promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave){
+void promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave){
     if(noFilhoEsq == NULL || noFilhoDir == NULL){
-        return chave;
+        return;
     }
 
-    Indice *indicePromovido = malloc(sizeof(Indice));
+    Indice indicePromovido;
 
     if(chave->chave < noFilhoDir->dados[0].chave){
         int i = 0;
         while(noFilhoEsq->dados[i].chave > 0){
-            indicePromovido = &noFilhoEsq->dados[i];
+            indicePromovido = noFilhoEsq->dados[i];
             i++;
         }
 
         organizaNo(noPai);
-        insereChaveNo(noPai, indicePromovido, noFilhoDir->RRNdoNo);
+        insereChaveNo(noPai, &indicePromovido, noFilhoDir->RRNdoNo);
         limpaIndice(&noFilhoEsq->dados[i - 1]);
 
         noFilhoDir->descendentes[0] = noFilhoEsq->descendentes[i];
@@ -305,14 +330,14 @@ Indice* promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave){
         }
         noFilhoDir->descendentes[k] = -1;
 
-        indicePromovido = &noFilhoDir->dados[0];
+        indicePromovido = noFilhoDir->dados[0];
         organizaNo(noPai);
-        insereChaveNo(noPai, indicePromovido, noFilhoDir->RRNdoNo);
+        insereChaveNo(noPai, &indicePromovido, noFilhoDir->RRNdoNo);
         limpaIndice(&noFilhoDir->dados[0]);
         organizaNo(noFilhoDir);
     }
 
-    return indicePromovido;
+    return;
 }
 
 int buscaProxNo(No* noBusca, Indice *chave){
@@ -371,15 +396,15 @@ No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave,
             cabecalho->RRNproxNo++;
 
             if(chave->chave < novoNo->dados[0].chave){
-                chave = promoveIndice(noFilho, noDividido, noPai, chave);
+                promoveIndice(noFilho, noDividido, noPai, chave);
             } else {
-                chave = promoveIndice(noFilho, noDividido, novoNo, chave);
+                promoveIndice(noFilho, noDividido, novoNo, chave);
             }
 
             organizaNo(noFilho);
             organizaNo(noDividido);
 
-            chave = promoveIndice(noPai, novoNo, novoNoRaiz, chave);
+            promoveIndice(noPai, novoNo, novoNoRaiz, chave);
 
             novoNoRaiz->descendentes[0] = noPai->RRNdoNo;
             cabecalho->noRaiz = novoNoRaiz->RRNdoNo;
@@ -401,6 +426,7 @@ No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave,
             // destroiNo(noPai);
             // destroiNo(noFilho);
             destroiNo(noDividido);
+            if (aux != NULL) destroiNo(aux);
 
             return NULL;
         }
@@ -408,9 +434,9 @@ No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave,
         divideNo(noPai, novoNo, cabecalho);
 
         if(chave->chave < novoNo->dados[0].chave){
-            chave = promoveIndice(noFilho, noDividido, noPai, chave);
+            promoveIndice(noFilho, noDividido, noPai, chave);
         } else {
-            chave = promoveIndice(noFilho, noDividido, novoNo, chave);
+            promoveIndice(noFilho, noDividido, novoNo, chave);
         }
 
         organizaNo(noPai);
@@ -422,10 +448,11 @@ No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave,
         escreveNo(noFilho, arquivo);
 
         destroiNo(noDividido);
+        if (aux != NULL) destroiNo(aux);
 
         return novoNo;
     } else {
-        chave = promoveIndice(noFilho, noDividido, noPai, chave);
+        promoveIndice(noFilho, noDividido, noPai, chave);
 
         organizaNo(noPai);
         organizaNo(noFilho);
@@ -437,12 +464,13 @@ No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave,
 
         destroiNo(noDividido);
         destroiNo(novoNo);
+        if (aux != NULL) destroiNo(aux);
 
         return NULL;
     }
 }
 
-void divideNo(No *noAntigo, No *noNovo, CabecalhoIndice *cabecalho){//Divide um nó em dois
+void divideNo(No *noAntigo, No *noNovo, CabecalhoIndice *cabecalho){
     noNovo->alturaNo = noAntigo->alturaNo;
     noNovo->folha = noAntigo->folha;
     noNovo->RRNdoNo = cabecalho->RRNproxNo;
@@ -523,7 +551,7 @@ int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo) {
             insereChaveNo(ind, indice, -1);
         }
 
-        Indice* novoIndice = promoveIndice(ind, novoNo, novoNoRaiz, indice);
+        promoveIndice(ind, novoNo, novoNoRaiz, indice);
 
         novoNoRaiz->descendentes[0] = ind->RRNdoNo;
         ci->noRaiz = novoNoRaiz->RRNdoNo;
@@ -535,10 +563,9 @@ int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo) {
         escreveNo(novoNo, arquivo);
         escreveNo(ind, arquivo);
 
-        // destroiNo(novoNo);
+        if (novoNo != NULL) destroiNo(novoNo);
         destroiNo(novoNoRaiz);
         destroiNo(ind);
-        destroiIndice(novoIndice);
 
         return SUCESSO;
     }

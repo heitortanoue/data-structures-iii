@@ -10,7 +10,6 @@
 #include <string.h>
 #include <math.h>
 
-
 // FUNCIONALIDADE 1 - Cria uma tabela com os campos especificados com base em um arquivo .CSV
 int createTable (void) {
     char nome_arquivo_entrada[128];
@@ -315,6 +314,7 @@ int createIndex () {
     FILE* bin = abreArquivo(nome_arquivo, "rb");
     FILE* ind = abreArquivo(nome_indice, "wb+");
 
+    // conta o num de registros do arquivo binario
     int qtdRegs = contarRegistros(bin);
     Cabecalho c;
     lerCabecalhoArquivo(bin, &c);
@@ -327,13 +327,18 @@ int createIndex () {
     Registro r;
     criaRegistro(&r);
     Indice indice;
+
+    // para cada registro:
     for (int i = 0; i < qtdRegs; i++){
+        // para para o Registro r
         lerRegistroArquivo(bin, &r);
 
+        // nao insere caso esteja removido
         if (registroRemovido(&r)) {
             continue;
         }
 
+        // chave primaria é o campo idConecta
         indice.chave = r.idConecta;
         indice.referencia = i;
         
@@ -350,9 +355,11 @@ int createIndex () {
     ci.alturaArvore = raiz->alturaNo;
     escreveCabecalhoIndice(&ci, ind);
 
+    // desaloca memoria
     destroiRegistro(&r);
     fclose(bin);
     fclose(ind);
+    destroiNo(raiz);
 
     binarioNaTela(nome_indice);
 
@@ -399,14 +406,16 @@ int searchIndex () {
         int encontrou = 0;
         printf("Busca %d\n", i + 1);
 
-        // filtros.tipo_campo[i] == 0 => nomePoPs
+        // caso o campo a ser buscado seja o idConecta (chave primaria), usa o arquivo de indice
         if (filtros.tipo_campo[i] == 0) {
+            // valida a chave passada
             int chave_valida = validaInt(filtros.criterios[i]);
             if (chave_valida == -1) {
                 printf("Registro inexistente.\n");
                 continue;
             }
             int pgs_acessadas = 0;
+            // faz a busca na arvoreB pela chave
             No* no = buscaChaveArvoreB(chave_valida, ci.noRaiz, ind, &encontrou, &pgs_acessadas);      
             if (encontrou == SUCESSO) {
                 int RRN_registro = referenciaChaveNo(no, chave_valida);
@@ -414,10 +423,12 @@ int searchIndex () {
                 lerRegistroArquivo(bin, &r);
                 imprimeRegistro(&r);
             }
+            // nro de paginas acessadas + 1 (cabecalho de dados) + 1 (cabecalho do indice) + 1 (arquivo de dados)
             filtros.pagDisco = pgs_acessadas + 3;
 
             destroiNo(no);
         } else {
+            // pesquisa normal
             for (int j = 0; j < qtdRegs; j++) {
                 lerRegistroArquivo(bin, &r);
                 if(testaRegistro(r, &filtros, i)){ //se tiver o campo de busca imprime
@@ -441,6 +452,7 @@ int searchIndex () {
     destroiFiltro(&filtros);
     destroiRegistro(&r);
     fclose(bin);
+    fclose(ind);
 
     return SUCESSO;
 }
@@ -456,14 +468,17 @@ int insertWithIndex () {
     int qnt_insercoes;
     scanf("%d", &qnt_insercoes);
 
+    // abre os arquivos
     FILE* bin = abreArquivo(nome_arquivo_bin, "rb+");
     FILE* ind = abreArquivo(nome_arquivo_indice, "rb+");
 
+    // le os cabecalhos
     Cabecalho c;
     lerCabecalhoArquivo(bin, &c);
     CabecalhoIndice ci;
     leCabecalhoIndice(&ci, ind);
 
+    // coloca os status iniciais '0'
     c.status = '0';
     ci.status = '0';
     fseek(bin, 0, SEEK_SET);
@@ -478,12 +493,15 @@ int insertWithIndex () {
     getchar();
     for (int i = 0; i < qnt_insercoes; i++){
         entradaDados(&r);
+        // insere registro no arquivo de dados
         indice.referencia = insereRegistro(&r, &c, bin);
 
         indice.chave = r.idConecta;
+        // insere no na arvoreb, campo de busca é o idConecta
         insereChaveArvoreB(&indice, &ci, ind);
     }
 
+    // atualiza os cabecalhos dos arquivos
     fseek(bin, 0, SEEK_SET);
     atualizarStatusCabecalho(&c, '1');
     atualizarNumPagDiscoCabecalho(&c, c.proxRRN);
@@ -494,6 +512,7 @@ int insertWithIndex () {
     ci.nroChavesTotal += qnt_insercoes;
     escreveCabecalhoIndice(&ci, ind);
 
+    // desaloca memoria
     destroiRegistro(&r);
     fclose(bin);
     fclose(ind);
@@ -505,7 +524,6 @@ int insertWithIndex () {
 }
 
 // FUNCIONALIDADE 10 - Junta dois arquivos de dados pelos seus campos
-// topologiaRede1.idPoPsConectado= topologiaRede2.idConecta
 int joinOn () {
     char nome_arq_dados_1[128];
     scanf("%s", nome_arq_dados_1);
@@ -539,19 +557,31 @@ int joinOn () {
     criaRegistro(&r1);
     criaRegistro(&r2);
 
+    // para cada registro no bin1, busca no bin2 pelo correspondente através do campo idConecta com o arquivo de indice (ind)
+    // bin1.idPoPsConectado = bin2.idConecta
+    int correspondencias = 0;
     for (int i = 0; i < qtdRegs1; i++) {
         lerRegistroArquivo(bin1, &r1);
         int chave_valida = r1.idPoPsConectado;
         int pgs_acessadas = 0;
         int encontrou = 0;
+
         No* no = buscaChaveArvoreB(chave_valida, ci.noRaiz, ind, &encontrou, &pgs_acessadas);      
         if (encontrou == SUCESSO) {
             int RRN_registro = referenciaChaveNo(no, chave_valida);
             fseek(bin2, calculaByteoffset(RRN_registro), SEEK_SET);
             lerRegistroArquivo(bin2, &r2);
             imprimeDoisRegistros(&r1, &r2);
+
+            correspondencias++;
         }
+
         destroiNo(no);
+    }
+
+    // caso nao encontre nenhum
+    if (!correspondencias) {
+        printf("Registro inexistente.\n");
     }
 
     fclose(bin1);

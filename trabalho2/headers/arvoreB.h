@@ -2,18 +2,11 @@
 #define __ARVORE_B_H__
 
 #include <stdio.h>
+#include "cabecalho.h"
 #define ORDEM 5
 #define TAM_PG_DISCO_INDICE 65
 #define TAM_CABECALHO_INDICE 17
 #define TAM_NO 65
-
-typedef struct {
-    char status;
-    int noRaiz;
-    int nroChavesTotal;
-    int alturaArvore;
-    int RRNproxNo;
-} CabecalhoIndice;
 
 typedef struct {
     int chave;
@@ -37,15 +30,11 @@ void imprimeNo (No* n);
 
 int calculaByteOffsetArvoreB (int RRN);
 
-void criaCabecalhoIndice (CabecalhoIndice* cabecalho);
-void escreveCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo);
-void leCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo);
-
 Indice* criaIndice (int chave, int referencia);
 void destroiIndice (Indice* indice);
 void limpaIndice (Indice* indice);
-Indice* copiaIndice (Indice* origem);
-Indice* promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave);
+void copiaIndice (Indice* origem, Indice* destino);
+void promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave);
 
 int noCheio (No* no);
 
