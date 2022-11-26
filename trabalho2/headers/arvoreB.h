@@ -30,28 +30,37 @@ typedef struct {
 } No;
 
 No* criaNo ();
+void destroiNo (No* no);
 void escreveNo (No *no, FILE *arquivo);
 No* leNo (int RRN, FILE *arquivo);
 void imprimeNo (No* n);
-int referenciaChaveNo (No* no, int chave);
+
+int calculaByteOffsetArvoreB (int RRN);
+
+void criaCabecalhoIndice (CabecalhoIndice* cabecalho);
 void escreveCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo);
 void leCabecalhoIndice (CabecalhoIndice *cabecalho, FILE *arquivo);
-void limpaIndice (Indice* indice);
-No* buscaChaveArvoreB (int chave, int RRN, FILE *arquivo, int* status, int *pgs_acessadas);
-int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo);
-void criaCabecalhoIndice (CabecalhoIndice* cabecalho);
-int insereChaveNo (No* no, Indice* indice, int desc);
-void dividirNo (No* no, No* no_esq, No* no_dir, CabecalhoIndice* ci, Indice* ind, FILE* arq);
-int dividirNoComPai (No* pai, No* no_esq, No* novo_dir, CabecalhoIndice* ci, Indice* ind, FILE* arq);
-Indice* copiaIndice (Indice* origem);
+
+Indice* criaIndice (int chave, int referencia);
 void destroiIndice (Indice* indice);
-void retiraNulosIndices (No* no);
-void divideNoTeste(No *noAntigo, No *noNovo, CabecalhoIndice *cabecalho);
-No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave, CabecalhoIndice *cabecalho);
-int buscaProxNo(No* noBusca, Indice *chave);
+void limpaIndice (Indice* indice);
+Indice* copiaIndice (Indice* origem);
 Indice* promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave);
-void organizaNo(No *no);
-void destroiNo (No* no);
-int buscaReferenciaNo (int chave, No* no);
+
+int noCheio (No* no);
+
+int buscaChaveNo (No* no, int chave);
+int referenciaChaveNo (No* no, int chave);
+int insereChaveNo (No* no, Indice* indice, int desc);
+void organizaDescendentes(No *no);
+int organizaNo(No *no);
+int buscaProxNo(No* noBusca, Indice *chave);
+void divideNo(No *noAntigo, No *noNovo, CabecalhoIndice *cabecalho);
+
+No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave, CabecalhoIndice *cabecalho);
+
+No* buscaChaveArvoreB (int chave, int RRN, FILE *arquivo, int* status, int *pgs_acessadas);
+void imprimeArvoreB(FILE* arquivo, CabecalhoIndice* c);
+int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo);
 
 #endif

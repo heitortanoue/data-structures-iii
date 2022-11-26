@@ -338,13 +338,17 @@ int createIndex () {
         //printf("i = %d\n", i);
         
         //insere o registro no arquivo de indice
+       //printf("i: %d\n", i);
         if (insereChaveArvoreB(&indice, &ci, ind) == SUCESSO) {
             (ci.nroChavesTotal)++;
         }
+
     }
 
     //atualiza o cabecalho do arquivo de indice
     ci.status = '1';
+    No* raiz = leNo(ci.noRaiz, ind);
+    ci.alturaArvore = raiz->alturaNo;
     // ...
     escreveCabecalhoIndice(&ci, ind);
 
@@ -407,7 +411,7 @@ int searchIndex () {
             int pgs_acessadas = 0;
             No* no = buscaChaveArvoreB(chave_valida, ci.noRaiz, ind, &encontrou, &pgs_acessadas);      
             if (encontrou == SUCESSO) {
-                int RRN_registro = buscaReferenciaNo(chave_valida, no);
+                int RRN_registro = referenciaChaveNo(no, chave_valida);
                 fseek(bin, calculaByteoffset(RRN_registro), SEEK_SET);
                 lerRegistroArquivo(bin, &r);
                 imprimeRegistro(&r);
@@ -464,13 +468,14 @@ int insertWithIndex () {
 
     c.status = '0';
     ci.status = '0';
-    escreveCabecalhoArquivo(&c, bin);
+    fseek(bin, 0, SEEK_SET);
+    fseek(ind, 0, SEEK_SET);
+    escreveCabecalhoArquivo(bin, &c);
     escreveCabecalhoIndice(&ci, ind);
 
     Registro r;
     criaRegistro(&r);
     Indice indice;
-    criaIndice(&indice);
 
     getchar();
     for (int i = 0; i < qnt_insercoes; i++){
@@ -488,9 +493,17 @@ int insertWithIndex () {
 
     fseek(ind, 0, SEEK_SET);
     ci.status = '1';
-    // ATUALIZAR NUM PG DISCO INDICE
-    ci.nroChavesTotal++;
-    escreveCabecalhoIndice(ind, &ci);
+    ci.nroChavesTotal += qnt_insercoes;
+    escreveCabecalhoIndice(&ci, ind);
+
+    destroiRegistro(&r);
+    fclose(bin);
+    fclose(ind);
+
+    binarioNaTela(nome_arquivo_bin);
+    binarioNaTela(nome_arquivo_indice);
+
+    return SUCESSO;
 }
 
 // FUNCIONALIDADE 10 - Junta dois arquivos de dados pelos seus campos
@@ -535,7 +548,7 @@ int joinOn () {
         int encontrou = 0;
         No* no = buscaChaveArvoreB(chave_valida, ci.noRaiz, ind, &encontrou, &pgs_acessadas);      
         if (encontrou == SUCESSO) {
-            int RRN_registro = buscaReferenciaNo(chave_valida, no);
+            int RRN_registro = referenciaChaveNo(no, chave_valida);
             fseek(bin2, calculaByteoffset(RRN_registro), SEEK_SET);
             lerRegistroArquivo(bin2, &r2);
             imprimeDoisRegistros(&r1, &r2);
