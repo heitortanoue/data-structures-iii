@@ -26,14 +26,10 @@ No* criaNo ();
 void destroiNo (No* no);
 void escreveNo (No *no, FILE *arquivo);
 No* leNo (int RRN, FILE *arquivo);
-void imprimeNo (No* n);
 
 int calculaByteOffsetArvoreB (int RRN);
 
-Indice* criaIndice (int chave, int referencia);
-void destroiIndice (Indice* indice);
 void limpaIndice (Indice* indice);
-void copiaIndice (Indice* origem, Indice* destino);
 void promoveIndice(No *noFilhoEsq, No *noFilhoDir, No *noPai, Indice *chave);
 
 int noCheio (No* no);
@@ -41,7 +37,6 @@ int noCheio (No* no);
 int buscaChaveNo (No* no, int chave);
 int referenciaChaveNo (No* no, int chave);
 int insereChaveNo (No* no, Indice* indice, int desc);
-void organizaDescendentes(No *no);
 int organizaNo(No *no);
 int buscaProxNo(No* noBusca, Indice *chave);
 void divideNo(No *noAntigo, No *noNovo, CabecalhoIndice *cabecalho);
@@ -49,7 +44,6 @@ void divideNo(No *noAntigo, No *noNovo, CabecalhoIndice *cabecalho);
 No* insereDivisaoRecursivo(No* noPai, No* noFilho, FILE *arquivo, Indice *chave, CabecalhoIndice *cabecalho);
 
 No* buscaChaveArvoreB (int chave, int RRN, FILE *arquivo, int* status, int *pgs_acessadas);
-void imprimeArvoreB(FILE* arquivo, CabecalhoIndice* c);
 int insereChaveArvoreB (Indice* indice, CabecalhoIndice* ci, FILE *arquivo);
 
 #endif

@@ -10,7 +10,7 @@
     
     ->  Heitor Tanoue de Mello
         NUSP: 12547260
-        100% da sua parte
+        100% da sua parte   
 
     ->  Pedro Oliveira Torrente
         NUSP: 11798853
