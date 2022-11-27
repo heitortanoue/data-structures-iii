@@ -9,8 +9,8 @@
 #define TAM_NO 65
 
 typedef struct {
-    int chave;
-    int referencia;
+    int chave; // Chave de busca Ci
+    int referencia; // Campo de referência para o arquivo de dados Pri
 } Indice;
 
 typedef struct {
@@ -19,7 +19,7 @@ typedef struct {
     int alturaNo;
     int RRNdoNo;
     Indice* dados;
-    int *descendentes;
+    int *descendentes; // Ponteiros para uma sub-árvore Pi
 } No;
 
 No* criaNo ();
