@@ -121,19 +121,6 @@ int noCheio (No* no) {
     return no->nroChavesNo == ORDEM - 1;
 }
 
-// Imprime o conteúdo de um nó
-void imprimeNo (No* n) {
-    printf("folha: %c, nroChavesNo: %d, alturaNo: %d, RRNdoNo: %d, descendentes: ", n->folha, n->nroChavesNo, n->alturaNo, n->RRNdoNo);
-    for (int i = 0; i < ORDEM; i++) {
-        printf("%d ", n->descendentes[i]);
-    }
-    printf(", dados: ");
-    for (int i = 0; i < ORDEM - 1; i++) {
-        printf("%d (%d) ", n->dados[i].chave, n->dados[i].referencia);
-    }
-    printf("\n");
-}
-
 // Busca uma chave dentro de um nó, retorna o index da chave no nó
 int buscaChaveNo (No* no, int chave) {
     int i = 0;
@@ -156,30 +143,10 @@ int referenciaChaveNo (No* no, int chave) {
     return no->dados[buscaChaveNo(no, chave)].referencia;
 }
 
-// Aloca memoria para um indice
-Indice* criaIndice (int chave, int referencia) {
-    Indice *novo = (Indice*) malloc(sizeof(Indice));
-    novo->chave = chave;
-    novo->referencia = referencia;
-
-    return novo;
-}
-
-// Desaloca memoria de um indice
-void destroiIndice (Indice* indice) {
-    free(indice);
-}
-
 // Coloca os valores de chave e referencia do indice como -1
 void limpaIndice (Indice* indice) {
     indice->chave = -1;
     indice->referencia = -1;
-}
-
-// Copia o conteúdo de um Indice para um novo Indice
-void copiaIndice (Indice* origem, Indice* destino) {
-    destino->chave = origem->chave;
-    destino->referencia = origem->referencia;
 }
 
 // Coloca um Indice em um nó
@@ -210,36 +177,6 @@ int insereChaveNo (No* no, Indice* indice, int desc) {
     no->nroChavesNo++;
 
     return i;
-}
-
-void organizaDescendentes(No *no){
-    int aux, i, j;
-    aux = no->descendentes[0];
-    i = 0;
-    j = 0;
-    while(i < ORDEM){
-        if(aux == -1){
-            while(aux < 0 && j < ORDEM){
-                j++;
-                aux = no->descendentes[j];
-            }
-            no->descendentes[i] = aux;
-            no->descendentes[j] = -1;
-        }
-        i++;
-        i = j;
-        aux = no->descendentes[i];
-    }
-}
-
-void imprimeArvoreB(FILE* arquivo, CabecalhoIndice* c){
-    No* no;
-    for (int i = 0; i < c->nroChavesTotal; i++){
-        no = leNo(i, arquivo);
-        if(no->RRNdoNo >= 0){
-            imprimeNo(no);
-        }
-    }
 }
 
 int organizaNo(No *no){

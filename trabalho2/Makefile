@@ -1,6 +1,6 @@
 CC          := gcc
 DEBUG_FLAGS := -Werror -Wall -g3 -pedantic -Werror=implicit-function-declaration -fsanitize=address,undefined
-FLAGS       := -lm -g #$(DEBUG_FLAGS)
+FLAGS       := -lm #$(DEBUG_FLAGS)
 
 SRC         := ./src
 BIN         := ./bin
@@ -25,7 +25,7 @@ run: all
 	./$(EXEC)
 
 clean:
-	rm -f $(EXEC) $(BIN)/*.o
+	rm -f $(EXEC) $(BIN)/*.o $(ZIP)
 
 zip:
 	rm -f $(ZIP)
