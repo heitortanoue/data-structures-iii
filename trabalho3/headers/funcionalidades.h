@@ -11,5 +11,6 @@ int createIndex ();
 int searchIndex ();
 int insertWithIndex ();
 int joinOn ();
+int createGraph ();
 
 #endif

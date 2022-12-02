@@ -9,6 +9,7 @@ char validaChar (char* c);
 int stringValida (char* str);
 int intValido (int i);
 int charValido (char c);
+int doubleValido (double d);
 void meuStrtok (char* pedaco, char *str, char delim);
 
 #endif

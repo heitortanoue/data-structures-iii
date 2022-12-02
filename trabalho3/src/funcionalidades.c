@@ -5,6 +5,7 @@
 #include "../headers/busca.h"
 #include "../headers/removeinsere.h"
 #include "../headers/arvoreB.h"
+#include "../headers/grafos.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -589,6 +590,65 @@ int joinOn () {
     fclose(ind);
     destroiRegistro(&r1);
     destroiRegistro(&r2);
+
+    return SUCESSO;
+}
+
+// FUNCIONALIDADE 11 - Gera um grafo a partir de um arquivo de dados
+int createGraph () {
+    char nome_arquivo[128];
+    scanf("%s", nome_arquivo);
+
+    FILE* bin = abreArquivo(nome_arquivo, "rb");
+
+    int qtdRegs = contarRegistros(bin);
+
+    Cabecalho c;
+    lerCabecalhoArquivo(bin, &c);
+
+    Registro r, r_aux;
+    criaRegistro(&r);
+    criaRegistro(&r_aux);
+
+    if (!qtdRegs) {
+        printf("Registro inexistente.\n\n");
+        printf("Numero de paginas de disco: %d\n\n", c.nroPagDisco);
+        return ERRO;
+    }
+
+    Grafo *g = alocaGrafo();
+
+    for (int i = 0; i < qtdRegs; i++) {
+        //Vertice *v = alocaVertice();
+
+        // fseek(bin, calculaByteoffset(i), SEEK_SET);
+        if(!lerRegistroArquivo(bin, &r)){
+            int ja_estava = 1;
+            Vertice *v = procuraIdVertice(g, r.idConecta);
+
+            // se nao existe o vertice, cria
+            if (v == NULL) {
+                v = alocaVertice();
+                copiaRegistroParaVertice(&r, v);
+                ja_estava = 0;
+            }
+
+            Aresta* a = alocaAresta();
+            copiaRegistroParaAresta(&r, a);
+            adicionaArestaVertice(v, a);
+
+            if (!ja_estava) {
+                adicionaVerticeGrafo(g, v);
+            }
+        }
+    }
+
+    imprimeGrafo(g);
+    
+    destroiRegistro(&r);
+    destroiRegistro(&r_aux);
+    destroiGrafo(g);
+    fclose(bin);
 
     return SUCESSO;
 }

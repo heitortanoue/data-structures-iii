@@ -5,7 +5,7 @@
 
 /*
       ---------------------------------------------
-    [  TRABALHO2 - ESTRUTURA DE DADOS III - 2022/2  ]
+    [  TRABALHO3 - ESTRUTURA DE DADOS III - 2022/2  ]
       ---------------------------------------------
     
     ->  Heitor Tanoue de Mello
@@ -50,6 +50,9 @@ int main () {
             break;
         case 10:
             joinOn();
+            break;
+        case 11:
+            createGraph();
             break;
         default:
             break;

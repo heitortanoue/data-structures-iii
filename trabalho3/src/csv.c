@@ -98,3 +98,6 @@ int intValido (int i) {
 int charValido (char c) {
     return c != '*';
 }
+int doubleValido (double d) {
+    return d > 0;
+}

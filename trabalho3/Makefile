@@ -1,6 +1,6 @@
 CC          := gcc
-DEBUG_FLAGS := -Werror -Wall -g3 -pedantic -Werror=implicit-function-declaration -fsanitize=address,undefined
-FLAGS       := -lm #$(DEBUG_FLAGS)
+DEBUG_FLAGS :=  -Wall -g3 -pedantic -Werror=implicit-function-declaration -fsanitize=address,undefined
+FLAGS       := -lm -g $(DEBUG_FLAGS)
 
 SRC         := ./src
 BIN         := ./bin
