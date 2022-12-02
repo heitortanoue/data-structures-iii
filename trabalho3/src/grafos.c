@@ -4,6 +4,8 @@
 #include "../headers/grafos.h"
 #include "../headers/registro.h"
 #include "../headers/csv.h"
+#include "../headers/cabecalho.h"
+#include "../headers/orgarquivos.h"
 
 double converterVelocidadeParaGbps (double velocidade, char unidade) {
     if (unidade == 'M') {
@@ -22,6 +24,8 @@ Vertice* alocaVertice () {
     vertice->tamanho = 0;
     vertice->inicioArestas = NULL;
     vertice->proxVertice = NULL;
+    vertice->cor = BRANCO;
+
     return vertice;
 }
 
@@ -153,12 +157,86 @@ void adicionaVerticeGrafo (Grafo* grafo, Vertice *vertice) {
 
 Vertice* procuraIdVertice (Grafo* grafo, int id) {
     Vertice* aux = grafo->inicioVertices;
-    while (aux != NULL && aux->idConecta != id) {
+    while (aux != NULL && aux->idConecta < id) {
         aux = aux->proxVertice;
+    }
+    if (aux != NULL && aux->idConecta == id) {
+        return aux;
+    } else {
+        return NULL;
+    }
+}
+
+Aresta* procuraIdAresta (Vertice* vertice, int id) {
+    Aresta* aux = vertice->inicioArestas;
+    while (aux != NULL && aux->idPoPsConectado < id) {
+        aux = aux->proxAresta;
+    }
+    if (aux != NULL && aux->idPoPsConectado == id) {
+        return aux;
+    } else {
+        return NULL;
     }
     return aux;
 }
 
-// int qntCiclosGrafo (Grafo* grafo) {
+int criaGrafoArquivo (Grafo* g, Cabecalho* c, FILE* bin) {
+    int qtdRegs = contarRegistros(bin);
 
-// }
+    lerCabecalhoArquivo(bin, c);
+
+    Registro r, r_aux;
+    criaRegistro(&r);
+    criaRegistro(&r_aux);
+
+    if (!qtdRegs) {
+        printf("Registro inexistente.\n\n");
+        printf("Numero de paginas de disco: %d\n\n", c->nroPagDisco);
+        return ERRO;
+    }
+
+    for (int i = 0; i < qtdRegs; i++) {
+        if(!lerRegistroArquivo(bin, &r)){
+            int ja_estava = 1;
+            Vertice *v = procuraIdVertice(g, r.idConecta);
+
+            if (v == NULL) {
+                v = alocaVertice();
+                copiaRegistroParaVertice(&r, v);
+                ja_estava = 0;
+            }
+
+            Aresta* a = alocaAresta();
+            copiaRegistroParaAresta(&r, a);
+            adicionaArestaVertice(v, a);
+
+            if (!ja_estava) {
+                adicionaVerticeGrafo(g, v);
+            }
+        }
+    }
+
+    destroiRegistro(&r);
+    destroiRegistro(&r_aux);
+
+    return SUCESSO;
+}
+
+// Busca em profundidade grafos, conta os ciclos
+void buscaEmProfundidade (Grafo* g, Vertice* v, int* num_ciclos) {
+    v->cor = CINZA;
+    Aresta* a = v->inicioArestas;
+    while (a != NULL) {
+        Vertice* w = procuraIdVertice(g, a->idPoPsConectado);
+        if (w == NULL) {
+            return;
+        }
+        if (w->cor == CINZA) {
+            (*num_ciclos)++;
+        } else if (w->cor == BRANCO) {
+            buscaEmProfundidade(g, w, num_ciclos);
+        }
+        a = a->proxAresta;
+    }
+    v->cor = PRETO;
+}

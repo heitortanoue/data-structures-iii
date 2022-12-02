@@ -54,6 +54,9 @@ int main () {
         case 11:
             createGraph();
             break;
+        case 12:
+            countCycles();
+            break;
         default:
             break;
     }

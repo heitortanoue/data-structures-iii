@@ -2,6 +2,9 @@
 #define __GRAFOS_H__
 
 #include "../headers/registro.h"
+#define BRANCO 1
+#define CINZA 2
+#define PRETO 3
 
 typedef struct Aresta {
     int idPoPsConectado;
@@ -18,6 +21,8 @@ typedef struct Vertice {
     int tamanho;
     Aresta* inicioArestas;
     struct Vertice* proxVertice;
+
+    int cor;
 } Vertice;
 
 typedef struct {
@@ -43,5 +48,9 @@ void adicionaVerticeGrafo (Grafo* grafo, Vertice *vertice);
 void imprimeGrafo (Grafo* grafo);
 
 Vertice* procuraIdVertice (Grafo* grafo, int id);
+
+void buscaEmProfundidade (Grafo* g, Vertice* v, int* num_ciclos);
+
+int criaGrafoArquivo (Grafo* g, Cabecalho* c, FILE* bin);
 
 #endif

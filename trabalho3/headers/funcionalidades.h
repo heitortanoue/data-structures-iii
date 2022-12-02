@@ -12,5 +12,6 @@ int searchIndex ();
 int insertWithIndex ();
 int joinOn ();
 int createGraph ();
+int countCycles ();
 
 #endif
