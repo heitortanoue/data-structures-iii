@@ -23,7 +23,7 @@ int atualizarStatusCabecalho (Cabecalho *c, char status) {
 
 int testaStatusCabecalho (Cabecalho *c) {
     if (c->status == '0') {
-        printf("Falha no processamento do arquivo.\n");
+        printf("Falha na execução da funcionalidade.\n");
         return ERRO;
     }
     return SUCESSO;

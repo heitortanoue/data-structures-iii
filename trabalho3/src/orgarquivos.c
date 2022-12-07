@@ -11,13 +11,13 @@
 FILE* abreArquivo(char *nome_arquivo, char *type) {
     FILE *arquivo = fopen(nome_arquivo, type);
     if (arquivo == NULL) {
-        printf("Falha no processamento do arquivo.\n");
+        printf("Falha na execução da funcionalidade.\n");
         exit(SUCESSO);
     }
     
     char c = fgetc(arquivo);
     if (c == '0') {
-        printf("Falha no processamento do arquivo.\n");
+        printf("Falha na execução da funcionalidade.\n");
         exit(SUCESSO);
     }
     fseek(arquivo, 0, SEEK_SET);

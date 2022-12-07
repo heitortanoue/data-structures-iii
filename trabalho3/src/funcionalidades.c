@@ -602,8 +602,12 @@ int createGraph () {
     FILE* bin = abreArquivo(nome_arquivo, "rb");
 
     Cabecalho c;
+    if (testaStatusCabecalho(&c) == ERRO) {
+        return ERRO;
+    }
+
     Grafo *g = alocaGrafo();
-    criaGrafoArquivo(g, &c, bin);
+    if(criaGrafoArquivo(g, &c, bin) == ERRO) return ERRO;
 
     imprimeGrafo(g);
     
@@ -621,18 +625,14 @@ int countCycles () {
     FILE* bin = abreArquivo(nome_arquivo, "rb");
 
     Cabecalho c;
-    Grafo *g = alocaGrafo();
-    criaGrafoArquivo(g, &c, bin);
-
-    int ciclos = 0;
-    Vertice* v_aux = g->inicioVertices;
-    for (int i = 0; i < g->tamanho; i++) {
-        if (v_aux->cor == PRETO) {
-            continue;
-        }
-        buscaEmProfundidade(g, v_aux, &ciclos);
-        v_aux = v_aux->proxVertice;
+    if (testaStatusCabecalho(&c) == ERRO) {
+        return ERRO;
     }
+
+    Grafo *g = alocaGrafo();
+    if(criaGrafoArquivo(g, &c, bin) == ERRO) return ERRO;
+
+    int ciclos = qtdCiclosGrafo(g);
 
     printf("Quantidade de ciclos: %d\n", ciclos);
 

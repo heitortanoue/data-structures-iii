@@ -64,6 +64,7 @@ typedef struct{
 
 int criaRegistro (Registro *r);
 int destroiRegistro (Registro *r);
+void copiaRegistro (Registro *r1, Registro *r2);
 
 int lerDadosRegistroTeclado(Registro *t);
 int insereStringRegistro (char* str, char* str_registro, int tam_campo);

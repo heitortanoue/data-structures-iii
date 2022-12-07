@@ -8,7 +8,7 @@
 
 typedef struct Aresta {
     int idPoPsConectado;
-    double velocidade;
+    long int velocidade;
     struct Aresta* proxAresta;
 } Aresta;
 
@@ -30,7 +30,7 @@ typedef struct {
     Vertice* inicioVertices;
 } Grafo;
 
-double converterVelocidadeParaGbps (double velocidade, char unidade);
+long int converterGbpsParaMpbs (int velocidade, char unidade);
 
 Aresta* alocaAresta ();
 void destroiAresta (Aresta* aresta);
@@ -50,7 +50,10 @@ void imprimeGrafo (Grafo* grafo);
 Vertice* procuraIdVertice (Grafo* grafo, int id);
 
 void buscaEmProfundidade (Grafo* g, Vertice* v, int* num_ciclos);
-
+int qtdCiclosGrafo (Grafo* g);
 int criaGrafoArquivo (Grafo* g, Cabecalho* c, FILE* bin);
+void adicionaRegistroGrafo (Grafo* g, Registro* r);
+
+int buscaIdConecta (int id, Registro *r, FILE* bin, int qtdRegs);
 
 #endif

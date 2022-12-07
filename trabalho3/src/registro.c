@@ -26,6 +26,18 @@ int destroiRegistro (Registro *r) {
     return SUCESSO;
 }
 
+void copiaRegistro (Registro *destino, Registro *origem) {
+    destino->removido = origem->removido;
+    destino->encadeamento = origem->encadeamento;
+    destino->idConecta = origem->idConecta;
+    strcpy(destino->siglaPais, origem->siglaPais);
+    destino->idPoPsConectado = origem->idPoPsConectado;
+    destino->unidadeMedida = origem->unidadeMedida;
+    destino->velocidade = origem->velocidade;
+    strcpy(destino->nomePoPs, origem->nomePoPs);
+    strcpy(destino->nomePais, origem->nomePais);
+}
+
 //Chamada da leitura dos campos a cada registro no teclado
 int lerDadosRegistroTeclado(Registro *t) {
     char str[128];

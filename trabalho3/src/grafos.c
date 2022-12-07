@@ -7,12 +7,11 @@
 #include "../headers/cabecalho.h"
 #include "../headers/orgarquivos.h"
 
-double converterVelocidadeParaGbps (double velocidade, char unidade) {
-    if (unidade == 'M') {
-        return velocidade * 0.0009765625;
-    } else {
-        return velocidade;
+long int converterGbpsParaMpbs (int velocidade, char unidade) {
+    if (unidade == 'G') {
+        return velocidade * 1024;
     }
+    return velocidade;
 }
 
 Vertice* alocaVertice () {
@@ -44,7 +43,7 @@ void destroiAresta (Aresta* aresta) {
 
 void copiaRegistroParaAresta (Registro* r, Aresta* aresta) {
     aresta->idPoPsConectado = r->idPoPsConectado;
-    aresta->velocidade = converterVelocidadeParaGbps((double) r->velocidade, r->unidadeMedida);
+    aresta->velocidade = converterGbpsParaMpbs(r->velocidade, r->unidadeMedida);
 }
 
 void copiaRegistroParaVertice (Registro* r, Vertice* vertice) {
@@ -100,7 +99,7 @@ void adicionaArestaVertice (Vertice* vertice, Aresta* aresta) {
 void imprimeVertice (Vertice* v) {
     Aresta* aux = v->inicioArestas;
     while (aux != NULL) {
-        printf("%d %s %s %s %d %lfGbps\n", v->idConecta, v->nomePoPs, v->nomePais, v->siglaPais, aux->idPoPsConectado, aux->velocidade);
+        printf("%d %s %s %s %d %ldMbps\n", v->idConecta, v->nomePoPs, v->nomePais, v->siglaPais, aux->idPoPsConectado, aux->velocidade);
         aux = aux->proxAresta;
     }
 }
@@ -197,22 +196,16 @@ int criaGrafoArquivo (Grafo* g, Cabecalho* c, FILE* bin) {
 
     for (int i = 0; i < qtdRegs; i++) {
         if(!lerRegistroArquivo(bin, &r)){
-            int ja_estava = 1;
-            Vertice *v = procuraIdVertice(g, r.idConecta);
+            adicionaRegistroGrafo(g, &r);
 
-            if (v == NULL) {
-                v = alocaVertice();
-                copiaRegistroParaVertice(&r, v);
-                ja_estava = 0;
+            if (buscaIdConecta(r.idPoPsConectado, &r_aux, bin, qtdRegs) == NAO_ENCONTRADO) {
+                printf("Falha na execução da funcionalidade.\n");
+                return ERRO;
             }
+            r_aux.velocidade = r.velocidade;
+            r_aux.idPoPsConectado = r.idConecta;
 
-            Aresta* a = alocaAresta();
-            copiaRegistroParaAresta(&r, a);
-            adicionaArestaVertice(v, a);
-
-            if (!ja_estava) {
-                adicionaVerticeGrafo(g, v);
-            }
+            adicionaRegistroGrafo(g, &r_aux);
         }
     }
 
@@ -222,7 +215,51 @@ int criaGrafoArquivo (Grafo* g, Cabecalho* c, FILE* bin) {
     return SUCESSO;
 }
 
-// Busca em profundidade grafos, conta os ciclos
+void adicionaRegistroGrafo (Grafo* g, Registro* r) {
+    int ja_estava = 1;
+    Vertice *v = procuraIdVertice(g, r->idConecta);
+
+    if (v == NULL) {
+        v = alocaVertice();
+        copiaRegistroParaVertice(r, v);
+        ja_estava = 0;
+    }
+
+    Aresta* a = alocaAresta();
+    copiaRegistroParaAresta(r, a);
+    adicionaArestaVertice(v, a);
+
+    if (!ja_estava) {
+        adicionaVerticeGrafo(g, v);
+    }
+}
+
+int buscaIdConecta (int id, Registro *r, FILE* bin, int qtdRegs) {
+    if (!intValido(id)) {
+        return ERRO;
+    }
+    long pos_atual = ftell(bin);
+    fseek(bin, calculaByteoffset(0), SEEK_SET);
+
+    Registro r_temp;
+    criaRegistro(&r_temp);
+    for (int i = 0; i < qtdRegs; i++) {
+        lerRegistroArquivo(bin, &r_temp);
+        if (r_temp.idConecta == id) {
+            copiaRegistro(r, &r_temp);
+            // imprimeRegistro(r);
+            destroiRegistro(&r_temp);
+            fseek(bin, pos_atual, SEEK_SET);
+            return SUCESSO;
+        }
+    }
+
+    destroiRegistro(&r_temp);
+    fseek(bin, pos_atual, SEEK_SET);
+    return NAO_ENCONTRADO;
+}
+
+// Busca em profundidade grafos, conta os ciclos 
 void buscaEmProfundidade (Grafo* g, Vertice* v, int* num_ciclos) {
     v->cor = CINZA;
     Aresta* a = v->inicioArestas;
@@ -231,7 +268,9 @@ void buscaEmProfundidade (Grafo* g, Vertice* v, int* num_ciclos) {
         if (w == NULL) {
             return;
         }
+        // printf("%d (%d),", w->idConecta, w->cor);
         if (w->cor == CINZA) {
+            // printf("\nCiclo encontrado!\n");
             (*num_ciclos)++;
         } else if (w->cor == BRANCO) {
             buscaEmProfundidade(g, w, num_ciclos);
@@ -239,4 +278,38 @@ void buscaEmProfundidade (Grafo* g, Vertice* v, int* num_ciclos) {
         a = a->proxAresta;
     }
     v->cor = PRETO;
+}
+
+int qtdCiclosGrafo (Grafo* g) {
+    int num_ciclos = 0;
+    Vertice* v = g->inicioVertices;
+    while (v != NULL) {
+        if (v->cor == BRANCO) {
+            buscaEmProfundidade(g, v, &num_ciclos);
+        }
+        v = v->proxVertice;
+    }
+    // Reinicia as cores dos vertices
+    while(v != NULL) {
+        v->cor = BRANCO;
+        v = v->proxVertice;
+    }
+    return num_ciclos;
+}
+
+void DFS (Grafo* g) {
+    Vertice* v = g->inicioVertices;
+    while (v != NULL) {
+        v->cor = BRANCO;
+        v = v->proxVertice;
+    }
+    int num_ciclos = 0;
+    v = g->inicioVertices;
+    while (v != NULL) {
+        if (v->cor == BRANCO) {
+            buscaEmProfundidade(g, v, &num_ciclos);
+        }
+        v = v->proxVertice;
+    }
+    printf("Numero de ciclos: %d", num_ciclos);
 }
