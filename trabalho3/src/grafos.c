@@ -203,6 +203,7 @@ int criaGrafoArquivo (Grafo* g, Cabecalho* c, FILE* bin) {
                 return ERRO;
             }
             r_aux.velocidade = r.velocidade;
+            r_aux.unidadeMedida = r.unidadeMedida;
             r_aux.idPoPsConectado = r.idConecta;
 
             adicionaRegistroGrafo(g, &r_aux);
