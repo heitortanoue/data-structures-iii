@@ -606,11 +606,14 @@ int createGraph () {
         return ERRO;
     }
 
+    // Aloca grafo e cria grafo a partir do arquivo de dados
     Grafo *g = alocaGrafo();
     if(criaGrafoArquivo(g, &c, bin) == ERRO) return ERRO;
 
+    // Imprime grafo
     imprimeGrafo(g);
     
+    // Desaloca memoria e fecha arquivo
     destroiGrafo(g);
     fclose(bin);
 
@@ -629,14 +632,16 @@ int countCycles () {
         return ERRO;
     }
 
+    // Aloca grafo e cria grafo a partir do arquivo de dados
     Grafo *g = alocaGrafo();
     if(criaGrafoArquivo(g, &c, bin) == ERRO) return ERRO;
 
-    int ciclos = qtdCiclosGrafo(g);
+    // Imprime quantidade de ciclos
+    printf("Quantidade de ciclos: %d\n", ContaCiclosSimplesGrafo(g));
 
-    printf("Quantidade de ciclos: %d\n", ciclos);
-
+    // Desaloca memoria e fecha arquivo
     destroiGrafo(g);
+    fclose(bin);
 
     return SUCESSO;
 }

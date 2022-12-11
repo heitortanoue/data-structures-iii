@@ -49,11 +49,13 @@ void imprimeGrafo (Grafo* grafo);
 
 Vertice* procuraIdVertice (Grafo* grafo, int id);
 
-void buscaEmProfundidade (Grafo* g, Vertice* v, int* num_ciclos);
 int qtdCiclosGrafo (Grafo* g);
 int criaGrafoArquivo (Grafo* g, Cabecalho* c, FILE* bin);
 void adicionaRegistroGrafo (Grafo* g, Registro* r);
 
 int buscaIdConecta (int id, Registro *r, FILE* bin, int qtdRegs);
+
+int ContaCiclosSimplesGrafo(Grafo* g);
+int buscaEmProfundidade(Grafo* g, Vertice* v, Vertice* p, unsigned short* color, Vertice** parent);
 
 #endif
