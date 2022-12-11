@@ -304,7 +304,7 @@ int buscaIdConecta (int id, Registro *r, FILE* bin, int qtdRegs) {
     // Percorre os registros do arquivo
     for (int i = 0; i < qtdRegs; i++) {
         // Se o registro for removido, pula para o proximo
-        if (!lerRegistroArquivo(bin, &r_temp)) {
+        if (lerRegistroArquivo(bin, &r_temp) != SUCESSO) {
             continue;
         }
         // Se o idConecta for igual ao passado, copia os dados do registro para o registro passado por parametro
