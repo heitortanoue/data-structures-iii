@@ -692,7 +692,7 @@ int maiorFluxoSemParada(){
     return SUCESSO;
 }
 
-// Calcula o menor caminho entre dois vertices passando em um terceiro
+// FUNCIONALIDADE 14 - Calcula o menor caminho entre dois vertices passando em um terceiro
 int menorFluxoParada(){
     char nome_arquivo[128];
     scanf("%s", nome_arquivo);
