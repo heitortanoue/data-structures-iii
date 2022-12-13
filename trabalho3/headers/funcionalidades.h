@@ -13,5 +13,7 @@ int insertWithIndex ();
 int joinOn ();
 int createGraph ();
 int countCycles ();
+int maiorFluxoSemParada();
+int menorFluxoParada();
 
 #endif

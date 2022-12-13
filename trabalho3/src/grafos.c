@@ -27,6 +27,8 @@ Vertice* alocaVertice () {
     vertice->inicioArestas = NULL;
     vertice->proxVertice = NULL;
     vertice->cor = BRANCO;
+    vertice->explorado = 0;
+    vertice->fluxo = 0;
 
     return vertice;
 }
@@ -104,6 +106,7 @@ void adicionaArestaVertice (Vertice* vertice, Aresta* aresta) {
         anterior->proxAresta = aresta;
     }
     vertice->tamanho++;
+    vertice->fluxo += aresta->velocidade;
 }
 
 // Iprime um vertice de acordo com as especificações do trabalho
@@ -389,4 +392,167 @@ int buscaEmProfundidade(Grafo* g, Vertice* verticeAtual, Vertice* pai, unsigned 
     // Marca o vertice como totalmente visitado
     cores[verticeAtual->idConecta] = PRETO;
     return contagem;
+}
+
+// Encontra o maior valor de id existente no grafo
+int maiorIdConectaGrafo (Grafo* g) {
+    Vertice *v = g->inicioVertices, *aux = NULL;
+
+    while (v != NULL) {
+        aux = v;
+        v = v->proxVertice;
+    }
+
+    return aux->idConecta;
+}
+
+// Calcula o menor fluxo entre dois caminhos (soma dos pesos dos caminhos / menor peso)
+int menorFluxo (Vertice* origem, Vertice* fim, Grafo* grafo){
+    int maiorIdConecta = maiorIdConectaGrafo(grafo);
+
+    Fluxo fluxo[maiorIdConecta]; //fluxo - peso e se foi explorado
+
+    Vertice* vAtual = origem;
+    Aresta* aresta;
+
+    for (int i = 0; i < maiorIdConecta; i++) {
+        fluxo[i].explorado = 0;
+        fluxo[i].idPrev = -1;
+        fluxo[i].peso = INFINITO;
+    }
+
+    fluxo[origem->idConecta].peso = 0;
+
+    //Enquanto o destino não foi explorado
+    while(!fluxo[fim->idConecta].explorado){
+        int menorPeso = fluxo[0].peso;
+        int pos = 0;
+        // Procura o menor peso de caminho para explorar
+        for(int i = 0; i < maiorIdConecta; i++){
+            if(menorPeso > fluxo[i].peso && !fluxo[i].explorado){
+                menorPeso = fluxo[i].peso;
+                pos = i;
+            }
+        }
+        
+        // Entra no vértice
+        vAtual = procuraIdVertice(grafo, pos);
+        if(vAtual == NULL){
+            return -1;
+        }
+        aresta = vAtual->inicioArestas;
+        fluxo[pos].explorado = 1;
+        int idAtual = vAtual->idConecta;
+        
+        // Calcula o peso de todos os caminhos possíveis no vertice deixando sempre o menor possível
+        while(aresta != NULL){
+            if(fluxo[idAtual].peso + aresta->velocidade < fluxo[aresta->idPoPsConectado].peso){
+                fluxo[aresta->idPoPsConectado].peso = fluxo[idAtual].peso + aresta->velocidade;
+                fluxo[aresta->idPoPsConectado].idPrev = idAtual;
+            }
+            aresta = aresta->proxAresta;
+        }
+    }
+
+    return fluxo[fim->idConecta].peso;
+}
+
+// Busca em largura calculando o fluxo máximo de saída (partindo de um vértice até um destino)
+int buscaLargura(Grafo* grafo, Vertice* inicio, Vertice* fim){
+    int maiorIdConecta = maiorIdConectaGrafo(grafo);
+    int visitaVertice[maiorIdConecta]; // fila que ordena os vertices a serem visitados
+    int corVertice[maiorIdConecta]; // marca a cor dos vertices
+    int ultimo;
+
+    Vertice *auxVertice;
+    Aresta *auxAresta;
+
+    for(int i = 0; i < maiorIdConecta; i++){
+        visitaVertice[i] = -1;
+        corVertice[i] = BRANCO;
+    }
+
+    visitaVertice[0] = inicio->idConecta;
+    ultimo = 1;
+    auxVertice = inicio;
+
+    // Calculo do fluxo inicial
+    int fluxo, maiorFluxo = INFINITO;
+    fluxo = calculaFluxo(auxVertice);
+    if(maiorFluxo > fluxo && fluxo > 0) maiorFluxo = fluxo;
+
+    int idVerticeAtual;
+
+    // Expande em largura até chegar no vertice de destino e a fila ficar vazia
+    while(!filaVazia(visitaVertice, maiorIdConecta) && corVertice[fim->idConecta] == BRANCO){
+        //Visita o primeiro vertice da fila
+        idVerticeAtual = visitaVertice[0];
+        corVertice[idVerticeAtual] = CINZA;
+
+        auxVertice = procuraIdVertice(grafo, idVerticeAtual);
+        auxAresta = auxVertice->inicioArestas;
+
+        //Calcula o fluxo no vertice
+        fluxo = calculaFluxo(auxVertice);
+        if(maiorFluxo > fluxo && fluxo > 0) maiorFluxo = fluxo;
+        
+        //Explora todas as arestas do vertice atual, adicionando em ordem na fila para serem visitados
+        while(auxAresta != NULL){
+            if(corVertice[auxAresta->idPoPsConectado] == BRANCO){
+                visitaVertice[ultimo] = auxAresta->idPoPsConectado;
+                corVertice[auxAresta->idPoPsConectado] = CINZA;
+                ultimo++;
+            }
+            auxAresta = auxAresta->proxAresta;
+        }
+
+        //Desenfilera e marca a cor como preta
+        desenfilera(visitaVertice, maiorIdConecta);
+        ultimo--;
+        corVertice[idVerticeAtual] = PRETO;
+    }
+
+    //Se não chegou no destino, não estão conectados
+    if(corVertice[fim->idConecta] == BRANCO){
+        return -1;
+    }
+    return maiorFluxo;
+}
+
+int desenfilera(int *fila, int tamanho){
+    for(int i = 0; i < tamanho; i++){
+        fila[i] = fila[i + 1];
+    }
+    fila[tamanho - 1] = -1;
+    return SUCESSO;
+}
+
+int filaVazia(int *fila, int tamanho){
+    for(int i = 0; i < tamanho; i++){
+        if(fila[i] != -1){
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void imprimeFila(int *fila, int tamanho){
+    for(int i = 0; i < tamanho; i++){
+        if(fila[i] > 0) printf("%d ", fila[i]);
+    }
+    printf("\n");
+}
+
+// Calcula o fluxo de saída
+int calculaFluxo(Vertice *v){
+    Aresta* aux;
+    aux = v->inicioArestas;
+    int fluxo = 0;
+
+    while(aux != NULL){
+        fluxo += aux->velocidade;
+        aux = aux->proxAresta;
+    }
+    
+    return fluxo;
 }

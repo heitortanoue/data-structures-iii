@@ -57,6 +57,11 @@ int main () {
         case 12:
             countCycles();
             break;
+        case 13:
+            maiorFluxoSemParada();
+            break;
+        case 14:
+            menorFluxoParada();
         default:
             break;
     }

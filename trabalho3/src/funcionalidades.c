@@ -645,3 +645,98 @@ int countCycles () {
 
     return SUCESSO;
 }
+
+// FUNCINALIDADE 13 - Calcula o fluxo máximo entre dois vertices
+int maiorFluxoSemParada(){
+    char nome_arquivo[128];
+    scanf("%s", nome_arquivo);
+
+    FILE* bin = abreArquivo(nome_arquivo, "rb");
+
+    Cabecalho c;
+    if (testaStatusCabecalho(&c) == ERRO) {
+        return ERRO;
+    }
+
+    int qtdRepeticoes;
+    scanf("%d", &qtdRepeticoes);
+
+    // Aloca grafo e cria grafo a partir do arquivo de dados
+    Grafo *g = alocaGrafo();
+    if(criaGrafoArquivo(g, &c, bin) == ERRO) return ERRO;
+
+    int origem, destino;
+    int fluxoMax;
+
+    // Calcula o fluxo max pra cada origem e destino, n vezes
+    for(int i = 0; i < qtdRepeticoes; i++){
+        scanf("%d", &origem);
+        scanf("%d", &destino);
+
+        Vertice* inicio = procuraIdVertice(g, origem);
+        Vertice* fim = procuraIdVertice(g, destino);
+
+        fluxoMax = buscaLargura(g, inicio, fim);
+
+        if(fluxoMax > 0){
+            printf("Fluxo máximo entre %d e %d: %d Mbps\n", origem, destino, fluxoMax);
+        } else {
+            printf("Fluxo máximo entre %d e %d: -1\n", origem, destino);
+        }
+    }
+
+    // Desaloca memoria e fecha arquivo
+    destroiGrafo(g);
+    fclose(bin);
+
+    return SUCESSO;
+}
+
+// Calcula o menor caminho entre dois vertices passando em um terceiro
+int menorFluxoParada(){
+    char nome_arquivo[128];
+    scanf("%s", nome_arquivo);
+
+    FILE* bin = abreArquivo(nome_arquivo, "rb");
+
+    Cabecalho c;
+    if (testaStatusCabecalho(&c) == ERRO) {
+        return ERRO;
+    }
+
+    int qtdRepeticoes;
+    scanf("%d", &qtdRepeticoes);
+
+    // Aloca grafo e cria grafo a partir do arquivo de dados
+    Grafo *g = alocaGrafo();
+    if(criaGrafoArquivo(g, &c, bin) == ERRO) return ERRO;
+
+    int origem, destino, parada, fluxoRota = 0;
+    int fluxo;
+
+    for(int i = 0; i < qtdRepeticoes; i++){
+        scanf("%d", &origem);
+        scanf("%d", &destino);
+        scanf("%d", &parada);
+        fluxoRota = 0;
+        fluxo = menorFluxo(procuraIdVertice(g, origem), procuraIdVertice(g, parada), g);
+        fluxoRota += fluxo;
+        if(fluxo < 0){
+            printf("Comprimento do caminho entre %d e %d parando em %d: %d\n", origem, destino, parada, fluxo);
+            continue;
+        }
+        fluxo = menorFluxo(procuraIdVertice(g, parada), procuraIdVertice(g, destino), g);
+        fluxoRota += fluxo;
+        if(fluxo < 0){
+            printf("Comprimento do caminho entre %d e %d parando em %d: %d\n", origem, destino, parada, fluxo);
+            continue;
+        }
+        printf("Comprimento do caminho entre %d e %d parando em %d: %dMbps\n", origem, destino, parada, fluxoRota);
+    }
+
+    // Desaloca memoria e fecha arquivo
+    destroiGrafo(g);
+    fclose(bin);
+
+    return SUCESSO;
+}
